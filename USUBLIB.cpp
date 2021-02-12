@@ -42,7 +42,7 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
 	branch = new viscous_branch[10];
   viscous_branch hyper_branch;
   MatrixXd tau = MatrixXd::Zero(3,3);
-  MatrixXd tangent = MatrixXd::Zero(3,3);
+  MatrixXd tangent = MatrixXd::Zero(6,6);
   *SSE = 0.0;
   *SCD = 0.0;
   for(int i=0;i<10;++i)
@@ -52,14 +52,17 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
       branch[i]->compute_be_tr(F);
       *(ivar+i)=branch[i]->update_intervar_newton_principal(F);
       tau += branch[i]->compute_stress_tau(branch[i].be);
-      tangent += rotate_mat_tan();
+      tangent += branch[i]->rotate_mat_tan();
       *SSE += branch[i]->compute_strain_energy(branch[i].be);
       *SCD += branch[i]->compute_dissipation();
   }
-
-  tau += hyper_branch.compute_stress_tau(b);
+  hyper_branch->set_inelastic_strain(MatrixXd::Identity(3,3));
+  tau += hyper_branch->compute_stress_tau(b);
+  tangent += hyper_branch->rotate_mat_tan();
   *SSE += hyper_branch->compute_strain_energy(b);
-  deviatoric_projector(tau);
+
+  tangent = deviatoric_projector_tangent(tau,tangent);
+  tau = deviatoric_projector(tau);
 
   float p = tau(2,2);
   tau += -p*MatrixXd::Identity(3,3);

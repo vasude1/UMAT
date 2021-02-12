@@ -178,7 +178,7 @@ void viscous_branch::compute_tangent_principal(){
 };
 
 
-void viscous_branch::compute_tangent_nr_principal(MatrixXd be){
+void viscous_branch::compute_tangent_nr_principal(){
   Tangent_principal = delta_t/eta*Stiff_principal+MatrixXd::Identity(3,3);
   double temp;
   for(int i=0;i<3;++i){
@@ -190,7 +190,7 @@ void viscous_branch::compute_tangent_nr_principal(MatrixXd be){
 
 
 
-void viscous_branch::compute_residual_principal(MatrixXd be_trial, MatrixXd be, MatrixXd res_principal){
+void viscous_branch::compute_residual_principal(){
 
   compute_invar(eigs,0);
   compute_derivative();
@@ -205,7 +205,7 @@ void viscous_branch::compute_residual_principal(MatrixXd be_trial, MatrixXd be, 
 
 };
 
-void viscous_branch::mat_tan_principal(MatrixXd be_trial, MatrixXd be, MatrixXd res_principal){
+void viscous_branch::mat_tan_principal(){
 
   MatrixXd C_alg =  Stiff_principal*Tangent_principal.inverse();
   mat_tan(0,0) = C_alg(0,0) - 2*tau_principal(0,0);
@@ -219,43 +219,44 @@ void viscous_branch::mat_tan_principal(MatrixXd be_trial, MatrixXd be, MatrixXd 
   mat_tan(2,1) = C_alg(2,1);
 
   if (abs(eigs(0,0)-eigs(1,0))<1E-4) {
-    mat_tan(3,3) = 0.5*(mat_tan(0,0));
+    mat_tan(3,3) = (mat_tan(0,0));
   }
   else {
-    mat_tan(3,3) = (tau_principal(1,0)/eigs(1,0) - tau_principal(0,0)/eigs(0,0))/(eigs(1,0) - eigs(0,0))*eigs(1,0)*eigs(0,0);
+    mat_tan(3,3) = 2.0*(tau_principal(1,0)/eigs(1,0) - tau_principal(0,0)/eigs(0,0))/(eigs(1,0) - eigs(0,0))*eigs(1,0)*eigs(0,0);
   }
 
   if (abs(eigs(1,0)-eigs(2,0))<1E-4) {
-    mat_tan(4,4) = 0.5*(mat_tan(1,1));
+    mat_tan(4,4) = (mat_tan(1,1));
   }
   else {
-    mat_tan(4,4) = (tau_principal(2,0)/eigs(2,0) - tau_principal(1,0)/eigs(1,0))/(eigs(2,0) - eigs(1,0))*eigs(2,0)*eigs(1,0);
+    mat_tan(4,4) = 2.0*(tau_principal(2,0)/eigs(2,0) - tau_principal(1,0)/eigs(1,0))/(eigs(2,0) - eigs(1,0))*eigs(2,0)*eigs(1,0);
   }
 
   if (abs(eigs(0,0)-eigs(2,0))<1E-4) {
-    mat_tan(5,5) = 0.5*(mat_tan(2,2));
+    mat_tan(5,5) = (mat_tan(2,2));
   }
   else {
-    mat_tan(5,5) = (tau_principal(2,0)/eigs(2,0) - tau_principal(0,0)/eigs(0,0))/(eigs(2,0) - eigs(0,0))*eigs(2,0)*eigs(0,0);
+    mat_tan(5,5) = 2.0*(tau_principal(2,0)/eigs(2,0) - tau_principal(0,0)/eigs(0,0))/(eigs(2,0) - eigs(0,0))*eigs(2,0)*eigs(0,0);
   }
 };
 
-MatrixXd viscous_branch::rotate_mat_tan(MatrixXd be_trial, MatrixXd be, MatrixXd res_principal){
+MatrixXd viscous_branch::rotate_mat_tan(){
+  mat_tan_principal();
   mat_tan = (Rotation_mat*mat_tan)*Rotation_mat.transpose();
 
-  mat_tan_rotated(0,0) = mat_tan(0,0);
-  mat_tan_rotated(0,1) = mat_tan(0,1);
-  mat_tan_rotated(0,2) = mat_tan(0,3);
+  // mat_tan_rotated(0,0) = mat_tan(0,0);
+  // mat_tan_rotated(0,1) = mat_tan(0,1);
+  // mat_tan_rotated(0,2) = mat_tan(0,3);
+  //
+  // mat_tan_rotated(1,0) = mat_tan(1,0);
+  // mat_tan_rotated(1,1) = mat_tan(1,1);
+  // mat_tan_rotated(1,2) = mat_tan(1,3);
+  //
+  // mat_tan_rotated(2,0) = mat_tan(4,0);
+  // mat_tan_rotated(2,1) = mat_tan(4,1);
+  // mat_tan_rotated(2,2) = mat_tan(4,4);
 
-  mat_tan_rotated(1,0) = mat_tan(1,0);
-  mat_tan_rotated(1,1) = mat_tan(1,1);
-  mat_tan_rotated(1,2) = mat_tan(1,3);
-
-  mat_tan_rotated(2,0) = mat_tan(4,0);
-  mat_tan_rotated(2,1) = mat_tan(4,1);
-  mat_tan_rotated(2,2) = mat_tan(4,4);
-
-  return mat_tan_rotated;
+  return mat_tan;
 
 };
 
@@ -294,9 +295,9 @@ MatrixXd viscous_branch::update_intervar_newton_principal(MatrixXd F){
   epsilon_tr = 0.5*log(eigs_tr.array());
 
     do {
-      compute_residual_principal(be_trial, be, res_principal);
-      compute_tangent_principal(Stiff_principal, be);
-      compute_tangent_nr_principal(Stiff_principal, be, Tangent_principal);
+      compute_residual_principal();
+      compute_tangent_principal();
+      compute_tangent_nr_principal();
       epsilon += Tangent_principal.colPivHouseholderQr().solve(res_principal);
       eigs = exp(epsilon.array());
     }

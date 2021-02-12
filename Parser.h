@@ -29,6 +29,43 @@ void parse_internal_variables(double* STATEV,MatrixXd* ivar){
   }
 };
 
-void deviatoric_projector(MatrixXd tau){
-  tau -= 1.0/3.0*(tau(0,0)+tau(1,1)+tau(2,2))*MatrixXd::Identity(3,3);  
+MatrixXd deviatoric_projector(MatrixXd tau){
+  tau -= 1.0/3.0*(tau(0,0)+tau(1,1)+tau(2,2))*MatrixXd::Identity(3,3);
+  return tau;
+};
+
+
+MatrixXd deviatoric_projector_tangent(tau,tangent){
+  MatrixXd tangent_temp = tangent;
+  tangent.col(0).array() -= (tangent_temp.col(0).array() + tangent_temp.col(1).array() + tangent_temp.col(2).array())/3.0;
+  tangent.col(2).array() -= (tangent_temp.col(0).array() + tangent_temp.col(1).array() + tangent_temp.col(2).array())/3.0;
+  tangent.col(3).array() -= (tangent_temp.col(0).array() + tangent_temp.col(1).array() + tangent_temp.col(2).array())/3.0;
+
+  tangent.row(0).array() -= (tangent_temp.row(0).array() + tangent_temp.row(1).array() + tangent_temp.row(2).array())/3.0;
+  tangent.row(2).array() -= (tangent_temp.row(0).array() + tangent_temp.row(1).array() + tangent_temp.row(2).array())/3.0;
+  tangent.row(3).array() -= (tangent_temp.row(0).array() + tangent_temp.row(1).array() + tangent_temp.row(2).array())/3.0;
+
+  tangent(seq(0,2),seq(0,2)).array() += tangent_temp(seq(0,2),seq(0,2)).sum()/9.0;
+
+  VectorXd tau_row(6);
+
+  tau_row(0) = tau(0,0);
+  tau_row(1) = tau(1,1);
+  tau_row(2) = tau(2,2);
+  tau_row(3) = tau(0,1);
+  tau_row(4) = tau(1,2);
+  tau_row(5) = tau(0,2);
+
+  tangent(seq(0,5),0) -= 2.0/3.0*tau_row.array();
+  tangent(seq(0,5),1) -= 2.0/3.0*tau_row.array();
+  tangent(seq(0,5),2) -= 2.0/3.0*tau_row.array();
+
+  tangent(0,seq(0,5)) -= 2.0/3.0*tau_row.array();
+  tangent(1,seq(0,5)) -= 2.0/3.0*tau_row.array();
+  tangent(2,seq(0,5)) -= 2.0/3.0*tau_row.array();
+
+
+
+
+
 };
