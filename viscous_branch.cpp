@@ -15,14 +15,15 @@ using namespace std;
 
 void viscous_branch::set_inelastic_strain(MatrixXd _C_i){
   C_i = _C_i;
+  eta = relaxation_time*c[0];
 };
 
-void viscous_branch::compute_be_tr(MatrixXd F){
+void viscous_branch::compute_be_tr(MatrixXd& F){
   be_tr = F*(C_i.inverse()*F.transpose());
   EigenSolver<Matrix3d> es(be_tr);
-  v0 = es.eigenvectors().col(0)(seq(0,2),0);
-  v1 = es.eigenvectors().col(1)(seq(0,2),0);
-  v2 = es.eigenvectors().col(2)(seq(0,2),0);
+  v0 = es.eigenvectors().col(0).real()(seq(0,2),0);
+  v1 = es.eigenvectors().col(1).real()(seq(0,2),0);
+  v2 = es.eigenvectors().col(2).real()(seq(0,2),0);
 
   Rotation_mat(0,0) = v0(0)*v0(0);
   Rotation_mat(1,0) = v1(0)*v1(0);
@@ -95,20 +96,20 @@ void viscous_branch::compute_second_derivative(){
   second_derivative[1][1]= 2*c[4] + 6*c[8]*(I2-3)+ 2*c[7]*(I1-3);
 };
 
-void viscous_branch::compute_stress_tau_principal(MatrixXd _eigs){
-  lambda_A = _eigs(0,0);
-  lambda_B = _eigs(1,0);
-  lambda_C = _eigs(2,0);
-  compute_invar(_eigs,0);
+void viscous_branch::compute_stress_tau_principal(){
+  lambda_A = eigs(0);
+  lambda_B = eigs(1);
+  lambda_C = eigs(2);
+  compute_invar(eigs,0);
   compute_derivative();
   I1 = invar[0];
   I2 = invar[1];
   dW_dI1 = derivative[0];
   dW_dI2 = derivative[1];
 
-  tau_principal(0,0) = (dW_dI1 + dW_dI2*(I1-lambda_A))*lambda_A;
-  tau_principal(1,0) = (dW_dI1 + dW_dI2*(I1-lambda_B))*lambda_B;
-  tau_principal(2,0) = (dW_dI1 + dW_dI2*(I1-lambda_C))*lambda_C;
+  tau_principal(0) = (dW_dI1 + dW_dI2*(I1-lambda_A))*lambda_A;
+  tau_principal(1) = (dW_dI1 + dW_dI2*(I1-lambda_B))*lambda_B;
+  tau_principal(2) = (dW_dI1 + dW_dI2*(I1-lambda_C))*lambda_C;
   tau_principal = 2*tau_principal;
 };
 
@@ -125,8 +126,8 @@ MatrixXd viscous_branch::compute_stress_tau(MatrixXd _be){
 
 double viscous_branch::compute_strain_energy(MatrixXd _be){
   double psi = 0.0;
-  compute_invar(_be,1)
-  psi += c[0]*(I1-3)+ c[1]*(I2-3):
+  compute_invar(_be,1);
+  psi += c[0]*(I1-3)+ c[1]*(I2-3);
   psi += c[2]*pow(I1-3,2.0)+c[3]*(I1-3)*(I2-3)+c[4]*pow(I2-3,2.0);
   psi += c[5]*pow(I1-3,3.0)+c[6]*pow(I1-3,2.0)*(I2-3);
   psi += c[7]*(I1-3)*pow(I2-3,2.0)+c[8]*pow(I2-3,3.0);
@@ -194,7 +195,7 @@ void viscous_branch::compute_residual_principal(){
 
   compute_invar(eigs,0);
   compute_derivative();
-  compute_stress_tau_principal(eigs);
+  compute_stress_tau_principal();
 
   I1 = invar[0];
   I2 = invar[1];
@@ -208,9 +209,9 @@ void viscous_branch::compute_residual_principal(){
 void viscous_branch::mat_tan_principal(){
 
   MatrixXd C_alg =  Stiff_principal*Tangent_principal.inverse();
-  mat_tan(0,0) = C_alg(0,0) - 2*tau_principal(0,0);
-  mat_tan(1,1) = C_alg(1,1) - 2*tau_principal(1,0);
-  mat_tan(2,2) = C_alg(2,2) - 2*tau_principal(2,0);
+  mat_tan(0,0) = C_alg(0,0) - 2*tau_principal(0);
+  mat_tan(1,1) = C_alg(1,1) - 2*tau_principal(1);
+  mat_tan(2,2) = C_alg(2,2) - 2*tau_principal(2);
   mat_tan(0,1) = C_alg(0,1);
   mat_tan(0,2) = C_alg(0,2);
   mat_tan(1,2) = C_alg(1,2);
@@ -218,49 +219,61 @@ void viscous_branch::mat_tan_principal(){
   mat_tan(2,0) = C_alg(2,0);
   mat_tan(2,1) = C_alg(2,1);
 
-  if (abs(eigs(0,0)-eigs(1,0))<1E-4) {
+  if (abs(eigs(0)-eigs(1))<1E-4) {
     mat_tan(3,3) = (mat_tan(0,0));
   }
   else {
-    mat_tan(3,3) = 2.0*(tau_principal(1,0)/eigs(1,0) - tau_principal(0,0)/eigs(0,0))/(eigs(1,0) - eigs(0,0))*eigs(1,0)*eigs(0,0);
+    mat_tan(3,3) = 2.0*(tau_principal(1)/eigs(1) - tau_principal(0)/eigs(0))/(eigs(1) - eigs(0))*eigs(1)*eigs(0);
   }
 
-  if (abs(eigs(1,0)-eigs(2,0))<1E-4) {
+  if (abs(eigs(1)-eigs(2))<1E-4) {
     mat_tan(4,4) = (mat_tan(1,1));
   }
   else {
-    mat_tan(4,4) = 2.0*(tau_principal(2,0)/eigs(2,0) - tau_principal(1,0)/eigs(1,0))/(eigs(2,0) - eigs(1,0))*eigs(2,0)*eigs(1,0);
+    mat_tan(4,4) = 2.0*(tau_principal(2)/eigs(2) - tau_principal(1)/eigs(1))/(eigs(2) - eigs(1))*eigs(2)*eigs(1);
   }
 
-  if (abs(eigs(0,0)-eigs(2,0))<1E-4) {
+  if (abs(eigs(0)-eigs(2))<1E-4) {
     mat_tan(5,5) = (mat_tan(2,2));
   }
   else {
-    mat_tan(5,5) = 2.0*(tau_principal(2,0)/eigs(2,0) - tau_principal(0,0)/eigs(0,0))/(eigs(2,0) - eigs(0,0))*eigs(2,0)*eigs(0,0);
+    mat_tan(5,5) = 2.0*(tau_principal(2)/eigs(2) - tau_principal(0)/eigs(0))/(eigs(2) - eigs(0))*eigs(2)*eigs(0);
   }
 };
 
 MatrixXd viscous_branch::rotate_mat_tan(){
   mat_tan_principal();
   mat_tan = (Rotation_mat*mat_tan)*Rotation_mat.transpose();
-
-  // mat_tan_rotated(0,0) = mat_tan(0,0);
-  // mat_tan_rotated(0,1) = mat_tan(0,1);
-  // mat_tan_rotated(0,2) = mat_tan(0,3);
-  //
-  // mat_tan_rotated(1,0) = mat_tan(1,0);
-  // mat_tan_rotated(1,1) = mat_tan(1,1);
-  // mat_tan_rotated(1,2) = mat_tan(1,3);
-  //
-  // mat_tan_rotated(2,0) = mat_tan(4,0);
-  // mat_tan_rotated(2,1) = mat_tan(4,1);
-  // mat_tan_rotated(2,2) = mat_tan(4,4);
-
   return mat_tan;
 
 };
 
-void convert_matrix_to_vector(MatrixXd Matrix, MatrixXd Vector){
+MatrixXd viscous_branch::update_intervar_newton_principal(MatrixXd& F){
+
+  EigenSolver<Matrix3d> es(be_tr,0);
+  eigs_tr(0) = norm(es.eigenvalues()(0,0));
+  eigs_tr(1) = norm(es.eigenvalues()(1,0));
+  eigs_tr(2) = norm(es.eigenvalues()(2,0));
+
+  eigs = eigs_tr;
+  epsilon_tr = 0.5*log(eigs_tr.array());
+  epsilon = epsilon_tr;
+
+    do {
+      compute_residual_principal();
+      compute_tangent_principal();
+      compute_tangent_nr_principal();
+      epsilon += Tangent_principal.colPivHouseholderQr().solve(res_principal);
+      eigs = exp(epsilon.array());
+    }
+    while (res_principal.norm() < 1E-7);
+  be = eigs(0)*v0*v0.transpose()+eigs(1)*v1*v1.transpose()+eigs(2)*v2*v2.transpose();
+  C_i = F.transpose()*(be.inverse()*F);
+  return C_i;
+};
+
+
+void convert_matrix_to_vector(MatrixXd& Matrix, MatrixXd& Vector){
   Vector(0) = Matrix(0,0);
   Vector(1) = Matrix(1,1);
   Vector(2) = Matrix(2,2);
@@ -269,7 +282,7 @@ void convert_matrix_to_vector(MatrixXd Matrix, MatrixXd Vector){
   Vector(5) = Matrix(0,2);
 };
 
-void convert_vector_to_matrix(MatrixXd Vector, MatrixXd Matrix){
+void convert_vector_to_matrix(MatrixXd& Vector, MatrixXd& Matrix){
    Matrix(0,0) = Vector(0);
    Matrix(1,1) = Vector(1);
    Matrix(2,2) = Vector(2);
@@ -279,29 +292,4 @@ void convert_vector_to_matrix(MatrixXd Vector, MatrixXd Matrix){
    Matrix(1,0) = Vector(3);
    Matrix(2,1) = Vector(4);
    Matrix(2,0) = Vector(5);
-};
-
-
-MatrixXd viscous_branch::update_intervar_newton_principal(MatrixXd F){
-
-  EigenSolver<Matrix3d> es(be_tr, false);
-  eigs_tr(0,0) = es.eigenvalues()(0,0);
-  eigs_tr(1,0) = es.eigenvalues()(1,0);
-  eigs_tr(2,0) = es.eigenvalues()(2,0);
-
-  eigs = eigs_tr;
-
-  epsilon = 0.5*log(eigs.array());
-  epsilon_tr = 0.5*log(eigs_tr.array());
-
-    do {
-      compute_residual_principal();
-      compute_tangent_principal();
-      compute_tangent_nr_principal();
-      epsilon += Tangent_principal.colPivHouseholderQr().solve(res_principal);
-      eigs = exp(epsilon.array());
-    }
-    while (res_principal < 1E-7);
-  be = eigs(0,0)*v0*v0.transpose()+eigs(1,0)*v1*v1.transpose()+eigs(2,0)*v2*v2.transpose()
-  return(F.transpose()*(be.inverse()*F))
 };

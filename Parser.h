@@ -1,5 +1,5 @@
 
-void parse_deformation_variables(double* DFGRD0,double* DFGRD1,MatrixXd F,MatrixXd F_old){
+void parse_deformation_variables(double* DFGRD0,double* DFGRD1,MatrixXd& F,MatrixXd& F_old){
   F_old(0,0) = DFGRD0[0];
   F_old(1,0) = DFGRD0[1];
   F_old(0,1) = DFGRD0[3];
@@ -21,21 +21,20 @@ void parse_material_properties(double* props, double* stiff_ratio, double* relax
   }
 };
 
-void parse_internal_variables(double* STATEV,MatrixXd* ivar){
+void parse_internal_variables(double* STATEV,Matrix3d* ivar){
   for(int i=0;i<10;++i){
-    *(ivar+i) << *(STATEV+5*i),*(STATEV+5*i+1),0.0,
-                *(STATEV+5*i+2),*(STATEV+5*i+3),0.0,
-                0.0,0.0,*(STATEV+5*i+4);
+    *(ivar+i) << *(STATEV+9*i),*(STATEV+9*i+1),*(STATEV+9*i+2),
+                *(STATEV+9*i+3),*(STATEV+9*i+4),*(STATEV+9*i+5),
+                *(STATEV+9*i+6),*(STATEV+9*i+7),*(STATEV+9*i+8);
   }
 };
 
-MatrixXd deviatoric_projector(MatrixXd tau){
+void deviatoric_projector(MatrixXd& tau){
   tau -= 1.0/3.0*(tau(0,0)+tau(1,1)+tau(2,2))*MatrixXd::Identity(3,3);
-  return tau;
 };
 
 
-MatrixXd deviatoric_projector_tangent(tau,tangent){
+void deviatoric_projector_tangent(double p,MatrixXd& tau,MatrixXd& tangent){
   MatrixXd tangent_temp = tangent;
   tangent.col(0).array() -= (tangent_temp.col(0).array() + tangent_temp.col(1).array() + tangent_temp.col(2).array())/3.0;
   tangent.col(2).array() -= (tangent_temp.col(0).array() + tangent_temp.col(1).array() + tangent_temp.col(2).array())/3.0;
@@ -48,24 +47,84 @@ MatrixXd deviatoric_projector_tangent(tau,tangent){
   tangent(seq(0,2),seq(0,2)).array() += tangent_temp(seq(0,2),seq(0,2)).sum()/9.0;
 
   VectorXd tau_row(6);
+  double tr_tau = tau(0,0)+tau(1,1)+tau(2,2);
 
-  tau_row(0) = tau(0,0);
-  tau_row(1) = tau(1,1);
-  tau_row(2) = tau(2,2);
+  tau_row(0) = tau(0,0)-tr_tau/3.0;
+  tau_row(1) = tau(1,1)-tr_tau/3.0;
+  tau_row(2) = tau(2,2)-tr_tau/3.0;
   tau_row(3) = tau(0,1);
   tau_row(4) = tau(1,2);
   tau_row(5) = tau(0,2);
 
-  tangent(seq(0,5),0) -= 2.0/3.0*tau_row.array();
-  tangent(seq(0,5),1) -= 2.0/3.0*tau_row.array();
-  tangent(seq(0,5),2) -= 2.0/3.0*tau_row.array();
+  tangent(seq(0,5),0) -= 2.0/3.0*tau_row;
+  tangent(seq(0,5),1) -= 2.0/3.0*tau_row;
+  tangent(seq(0,5),2) -= 2.0/3.0*tau_row;
 
-  tangent(0,seq(0,5)) -= 2.0/3.0*tau_row.array();
-  tangent(1,seq(0,5)) -= 2.0/3.0*tau_row.array();
-  tangent(2,seq(0,5)) -= 2.0/3.0*tau_row.array();
+  tangent(0,seq(0,5)) -= 2.0/3.0*tau_row;
+  tangent(1,seq(0,5)) -= 2.0/3.0*tau_row;
+  tangent(2,seq(0,5)) -= 2.0/3.0*tau_row;
 
+  tr_tau *= 2.0/3.0;
 
+  tangent(0,0) += 0.66*tr_tau;
+  tangent(0,1) += -0.33*tr_tau;
+  tangent(0,2) += -0.33*tr_tau;
 
+  tangent(1,0) += -0.33*tr_tau;
+  tangent(1,1) += 0.66*tr_tau;
+  tangent(1,2) += -0.33*tr_tau;
 
+  tangent(2,0) += -0.33*tr_tau;
+  tangent(2,1) += -0.33*tr_tau;
+  tangent(2,2) += 0.66*tr_tau;
 
+  tangent(3,3) += 0.5*tr_tau;
+  tangent(4,4) += 0.5*tr_tau;
+  tangent(5,5) += 0.5*tr_tau;
+
+  for(int i =0; i<6;++i){
+    if(i<3){
+      tangent(i,i) += 2*p;
+    }
+    else{
+      tangent(i,i) += p;
+    }
+  }
+  tangent(seq(0,2),seq(0,2)).array() -= p;
+};
+
+void return_stress(double* stress, MatrixXd tau){
+  *(stress+0) = tau(0,0);
+  *(stress+1) = tau(1,1);
+  *(stress+2) = tau(0,1);
+};
+
+void return_tangent(double* DDSDDE, MatrixXd tangent){
+  *(DDSDDE+0) = tangent(0,0);
+  *(DDSDDE+1) = tangent(1,0);
+  *(DDSDDE+2) = tangent(4,0);
+  *(DDSDDE+3) = tangent(0,1);
+  *(DDSDDE+4) = tangent(1,1);
+  *(DDSDDE+5) = tangent(4,1);
+  *(DDSDDE+6) = tangent(0,4);
+  *(DDSDDE+7) = tangent(1,4);
+  *(DDSDDE+8) = tangent(4,4);
+};
+
+void return_internalvar(double* STATEV,Matrix3d* ivar){
+  for(int i=0;i<10;++i){
+    Matrix3d temp = *(ivar+i);
+    *(STATEV+9*i) = temp(0,0);
+    *(STATEV+9*i+1) = temp(0,1);
+    *(STATEV+9*i+2) = temp(0,2);
+
+    *(STATEV+9*i+3) = temp(1,0);
+    *(STATEV+9*i+4) = temp(1,1);
+    *(STATEV+9*i+5) = temp(1,2);
+
+    *(STATEV+9*i+6) = temp(2,0);
+    *(STATEV+9*i+7) = temp(2,1);
+    *(STATEV+9*i+8) = temp(2,2);
+
+  }
 };

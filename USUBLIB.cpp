@@ -7,11 +7,12 @@
 #include <list>
 #include <string>
 
-#include "Parser.h"
-
-
 using namespace Eigen;
 using namespace std;
+
+#include "Parser.h"
+#include "Material.h"
+#include "viscous_branch.h"
 
 extern "C"
 //
@@ -34,40 +35,48 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
   double relaxation_time[10];
   parse_material_properties(PROPS,stiff_ratio,relaxation_time);
 
-  MatrixXd *ivar =new Eigen::MatrixXd(3,3)[10];
+  Matrix3d *ivar =new Matrix3d [10];
   parse_internal_variables(STATEV,ivar);
 
 	MatrixXd C_old = F_old.transpose()*F_old;
 
-	branch = new viscous_branch[10];
+	viscous_branch* branch = new viscous_branch[10];
   viscous_branch hyper_branch;
   MatrixXd tau = MatrixXd::Zero(3,3);
   MatrixXd tangent = MatrixXd::Zero(6,6);
+
   *SSE = 0.0;
   *SCD = 0.0;
   for(int i=0;i<10;++i)
   {
-      branch[i]->set_material(stiff_ratio[i],relaxation_time[i]);
-      branch[i]->set_inelastic_strain(*(ivar+i));
-      branch[i]->compute_be_tr(F);
-      *(ivar+i)=branch[i]->update_intervar_newton_principal(F);
-      tau += branch[i]->compute_stress_tau(branch[i].be);
-      tangent += branch[i]->rotate_mat_tan();
-      *SSE += branch[i]->compute_strain_energy(branch[i].be);
-      *SCD += branch[i]->compute_dissipation();
+      (branch+i)->delta_t = *DTIME;
+      (branch+i)->set_material(stiff_ratio[i],relaxation_time[i]);
+      (branch+i)->set_inelastic_strain(*(ivar+i));
+      (branch+i)->compute_be_tr(F);
+      *(ivar+i)=(branch+i)->update_intervar_newton_principal(F);
+      tau += (branch+i)->compute_stress_tau(branch[i].be);
+      tangent += (branch+i)->rotate_mat_tan();
+      *SSE += (branch+i)->compute_strain_energy(branch[i].be);
+      *SCD += (branch+i)->compute_dissipation();
   }
-  hyper_branch->set_inelastic_strain(MatrixXd::Identity(3,3));
-  tau += hyper_branch->compute_stress_tau(b);
-  tangent += hyper_branch->rotate_mat_tan();
-  *SSE += hyper_branch->compute_strain_energy(b);
 
-  tangent = deviatoric_projector_tangent(tau,tangent);
-  tau = deviatoric_projector(tau);
+  hyper_branch.set_material(1.0,1E7);
+  hyper_branch.set_inelastic_strain(MatrixXd::Identity(3,3));
+  hyper_branch.compute_be_tr(F);
+  hyper_branch.update_intervar_newton_principal(F);
+  tau += hyper_branch.compute_stress_tau(b);
+  tangent += hyper_branch.rotate_mat_tan();
+  *SSE += hyper_branch.compute_strain_energy(b);
 
-  float p = tau(2,2);
+  double p = tau(2,2);
+
+  deviatoric_projector_tangent(p,tau,tangent);
+  deviatoric_projector(tau);
   tau += -p*MatrixXd::Identity(3,3);
 
-
+  return_stress(STRESS,tau);
+  return_tangent(DDSDDE,tangent);
+  return_internalvar(STATEV,ivar);
 
 
 
