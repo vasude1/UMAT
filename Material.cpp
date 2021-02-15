@@ -17,4 +17,5 @@ void Material::set_material(double _stiff_ratio, double _relaxation_time){
     for(int i=0;i<9;++i){
       c[i] *= stiff_ratio;
     }
+
 };

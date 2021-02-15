@@ -74,8 +74,8 @@ void viscous_branch::compute_invar(MatrixXd C, bool a){
     invar[1] = -0.5*(C(0,0)*C(0,0)+C(1,1)*C(1,1)+C(2,2)*C(2,2)+2.0*(C(1,0)*C(1,0)+C(1,2)*C(1,2)+C(0,2)*C(0,2)) - invar[0]*invar[0]);
   }
   if(!a){
-    invar[0] = C(0,0)+ C(1,1) + C(2,2);
-    invar[1] = C(0,0)*C(1,1) + C(1,1)*C(2,2) + C(0,0)*C(2,2);
+    invar[0] = C(0)+ C(1) + C(2);
+    invar[1] = C(0)*C(1) + C(1)*C(2) + C(0)*C(2);
   }
 
 };
@@ -94,6 +94,9 @@ void viscous_branch::compute_second_derivative(){
   second_derivative[0][1]= c[3] + 2*c[6]*(I1-3)+ 2*c[7]*(I2-3);
   second_derivative[1][0]= second_derivative[0][1];
   second_derivative[1][1]= 2*c[4] + 6*c[8]*(I2-3)+ 2*c[7]*(I1-3);
+
+  // // std::cout << second_derivative[0][0] << second_derivative[0][1] <<second_derivative[1][0]<<second_derivative[1][1] << '\n';
+
 };
 
 void viscous_branch::compute_stress_tau_principal(){
@@ -111,6 +114,8 @@ void viscous_branch::compute_stress_tau_principal(){
   tau_principal(1) = (dW_dI1 + dW_dI2*(I1-lambda_B))*lambda_B;
   tau_principal(2) = (dW_dI1 + dW_dI2*(I1-lambda_C))*lambda_C;
   tau_principal = 2*tau_principal;
+  // std::cout << "tau principal" << '\n';
+  // std::cout << tau_principal << '\n';
 };
 
 MatrixXd viscous_branch::compute_stress_tau(MatrixXd _be){
@@ -121,6 +126,7 @@ MatrixXd viscous_branch::compute_stress_tau(MatrixXd _be){
   dW_dI1 = derivative[0];
   dW_dI2 = derivative[1];
   tau = 2*(dW_dI1+I1*dW_dI2)*_be - 2*dW_dI2*(_be*_be);
+  // // std::cout << tau << '\n';
   return tau;
 };
 
@@ -156,37 +162,41 @@ void viscous_branch::compute_tangent_principal(){
 
   Stiff_principal(0,0) = dW_dI1+dW_dI2*(I1-lambda_A)+lambda_A*(d2W_dI1I1+d2W_dI1I2*(I1-lambda_A)+(I1-lambda_A)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_A)));
   Stiff_principal(0,0) *= 2*lambda_A;
-  Stiff_principal(1,0) = dW_dI1+dW_dI2*(I1-lambda_B)+(I1-lambda_A)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_B))+dW_dI2;
-  Stiff_principal(1,0) *= 2*lambda_A;
-  Stiff_principal(2,0) = dW_dI1+dW_dI2*(I1-lambda_C)+(I1-lambda_A)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_C))+dW_dI2;
-  Stiff_principal(2,0) *= 2*lambda_A;
+  Stiff_principal(1,0) = d2W_dI1I1+d2W_dI1I2*(I1-lambda_B)+(I1-lambda_A)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_B))+dW_dI2;
+  Stiff_principal(1,0) *= 2*lambda_B;
+  Stiff_principal(2,0) = d2W_dI1I1+d2W_dI1I2*(I1-lambda_C)+(I1-lambda_A)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_C))+dW_dI2;
+  Stiff_principal(2,0) *= 2*lambda_C;
 
-  Stiff_principal(0,1) = dW_dI1+dW_dI2*(I1-lambda_A)+(I1-lambda_B)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_A))+dW_dI2;
-  Stiff_principal(0,1) *= 2*lambda_B;
+  Stiff_principal(0,1) = d2W_dI1I1+d2W_dI1I2*(I1-lambda_A)+(I1-lambda_B)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_A))+dW_dI2;
+  Stiff_principal(0,1) *= 2*lambda_A;
   Stiff_principal(1,1) = dW_dI1+dW_dI2*(I1-lambda_B)+lambda_B*(d2W_dI1I1+d2W_dI1I2*(I1-lambda_B)+(I1-lambda_B)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_B)));
   Stiff_principal(1,1) *= 2*lambda_B;
-  Stiff_principal(2,1) = dW_dI1+dW_dI2*(I1-lambda_C)+(I1-lambda_B)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_C))+dW_dI2;
-  Stiff_principal(2,1) *= 2*lambda_B;
+  Stiff_principal(2,1) = d2W_dI1I1+d2W_dI1I2*(I1-lambda_C)+(I1-lambda_B)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_C))+dW_dI2;
+  Stiff_principal(2,1) *= 2*lambda_C;
 
-  Stiff_principal(0,2) = dW_dI1+dW_dI2*(I1-lambda_A)+(I1-lambda_C)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_A))+dW_dI2;
-  Stiff_principal(0,2) *= 2*lambda_C;
-  Stiff_principal(1,2) = dW_dI1+dW_dI2*(I1-lambda_B)+(I1-lambda_C)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_B))+dW_dI2;
-  Stiff_principal(1,2) *= 2*lambda_C;
+  Stiff_principal(0,2) = d2W_dI1I1+d2W_dI1I2*(I1-lambda_A)+(I1-lambda_C)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_A))+dW_dI2;
+  Stiff_principal(0,2) *= 2*lambda_A;
+  Stiff_principal(1,2) = d2W_dI1I1+d2W_dI1I2*(I1-lambda_B)+(I1-lambda_C)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_B))+dW_dI2;
+  Stiff_principal(1,2) *= 2*lambda_B;
   Stiff_principal(2,2) = dW_dI1+dW_dI2*(I1-lambda_C)+lambda_C*(d2W_dI1I1+d2W_dI1I2*(I1-lambda_C)+(I1-lambda_C)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_C)));
   Stiff_principal(2,2) *= 2*lambda_C;
 
   Stiff_principal *= 2.0;
+  // std::cout << "Stiff principalm" << '\n';
+  // std::cout << Stiff_principal<< '\n';
 };
 
 
 void viscous_branch::compute_tangent_nr_principal(){
-  Tangent_principal = delta_t/eta*Stiff_principal+MatrixXd::Identity(3,3);
+  Tangent_principal = delta_t/2.0/eta*Stiff_principal+MatrixXd::Identity(3,3);
   double temp;
   for(int i=0;i<3;++i){
       temp = Stiff_principal(0,i)+Stiff_principal(1,i)+Stiff_principal(2,i);
       temp /= 3.0;
-      Tangent_principal(seq(0,2),i).array() -= delta_t/eta*temp;
+      Tangent_principal(seq(0,2),i).array() -= delta_t/2.0/eta*temp;
   }
+  // std::cout << "Tangent Principal" << '\n';
+  // std::cout << Tangent_principal << '\n';
 };
 
 
@@ -202,13 +212,28 @@ void viscous_branch::compute_residual_principal(){
   dW_dI1 = derivative[0];
   dW_dI2 = derivative[1];
 
-  res_principal = epsilon + delta_t/eta*(tau_principal - 1.0/3.0*tau_principal.sum()*VectorXd::Ones(3)) - epsilon_tr;
+  res_principal = epsilon + delta_t/2.0/eta*(tau_principal - 1.0/3.0*tau_principal.sum()*VectorXd::Ones(3)) - epsilon_tr;
 
+  // // std::cout << "epsilon" << '\n';
+  // // std::cout << epsilon << '\n';
+
+  // // std::cout << "tau_principal" << '\n';
+  // // std::cout << tau_principal - 1.0/3.0*tau_principal.sum()*VectorXd::Ones(3) << '\n';
+
+  // // std::cout << "Derived" << '\n';
+  // // std::cout << delta_t/eta << '\n';
+
+  // // std::cout << "Res_prin" << '\n';
+  // // std::cout << res_principal << '\n';
 };
 
 void viscous_branch::mat_tan_principal(){
 
-  MatrixXd C_alg =  Stiff_principal*Tangent_principal.inverse();
+  MatrixXd C_alg =  Stiff_principal*(Tangent_principal.inverse());
+
+  // std::cout << "C_alg" << '\n';
+  // std::cout << C_alg << '\n';
+
   mat_tan(0,0) = C_alg(0,0) - 2*tau_principal(0);
   mat_tan(1,1) = C_alg(1,1) - 2*tau_principal(1);
   mat_tan(2,2) = C_alg(2,2) - 2*tau_principal(2);
@@ -219,31 +244,36 @@ void viscous_branch::mat_tan_principal(){
   mat_tan(2,0) = C_alg(2,0);
   mat_tan(2,1) = C_alg(2,1);
 
-  if (abs(eigs(0)-eigs(1))<1E-4) {
-    mat_tan(3,3) = (mat_tan(0,0));
+  if (abs(eigs_tr(0)-eigs_tr(1))<1E-2) {
+    mat_tan(3,3) = 0.25*(mat_tan(1,1));
   }
   else {
-    mat_tan(3,3) = 2.0*(tau_principal(1)/eigs(1) - tau_principal(0)/eigs(0))/(eigs(1) - eigs(0))*eigs(1)*eigs(0);
+    mat_tan(3,3) = 0.5*(tau_principal(1)/eigs_tr(1) - tau_principal(0)/eigs_tr(0))/(eigs_tr(1) - eigs_tr(0))*eigs_tr(1)*eigs_tr(0);
   }
 
-  if (abs(eigs(1)-eigs(2))<1E-4) {
-    mat_tan(4,4) = (mat_tan(1,1));
+  if (abs(eigs_tr(1)-eigs_tr(2))<1E-2) {
+    mat_tan(4,4) = 0.25*(mat_tan(1,1));
   }
   else {
-    mat_tan(4,4) = 2.0*(tau_principal(2)/eigs(2) - tau_principal(1)/eigs(1))/(eigs(2) - eigs(1))*eigs(2)*eigs(1);
+    mat_tan(4,4) = 0.5*(tau_principal(2)/eigs_tr(2) - tau_principal(1)/eigs_tr(1))/(eigs_tr(2) - eigs_tr(1))*eigs_tr(2)*eigs_tr(1);
   }
 
-  if (abs(eigs(0)-eigs(2))<1E-4) {
-    mat_tan(5,5) = (mat_tan(2,2));
+  if (abs(eigs_tr(0)-eigs_tr(2))<1E-2) {
+    mat_tan(5,5) = 0.25*(mat_tan(2,2));
   }
   else {
-    mat_tan(5,5) = 2.0*(tau_principal(2)/eigs(2) - tau_principal(0)/eigs(0))/(eigs(2) - eigs(0))*eigs(2)*eigs(0);
+    mat_tan(5,5) = 0.5*(tau_principal(2)/eigs_tr(2) - tau_principal(0)/eigs_tr(0))/(eigs_tr(2) - eigs_tr(0))*eigs_tr(2)*eigs_tr(0);
   }
+  // std::cout << eigs_tr << '\n';
+  // std::cout << "Material tangent" << '\n';
+  // std::cout << mat_tan<< '\n';
 };
 
 MatrixXd viscous_branch::rotate_mat_tan(){
   mat_tan_principal();
   mat_tan = (Rotation_mat*mat_tan)*Rotation_mat.transpose();
+  // std::cout << "Mat tan final" << '\n';
+  // std::cout << mat_tan << '\n';
   return mat_tan;
 
 };
@@ -251,11 +281,14 @@ MatrixXd viscous_branch::rotate_mat_tan(){
 MatrixXd viscous_branch::update_intervar_newton_principal(MatrixXd& F){
 
   EigenSolver<Matrix3d> es(be_tr,0);
-  eigs_tr(0) = norm(es.eigenvalues()(0,0));
-  eigs_tr(1) = norm(es.eigenvalues()(1,0));
-  eigs_tr(2) = norm(es.eigenvalues()(2,0));
+  Vector3d depsilon;
+  eigs_tr(0) = es.eigenvalues()(0,0).real();
+  eigs_tr(1) = es.eigenvalues()(1,0).real();
+  eigs_tr(2) = es.eigenvalues()(2,0).real();
 
   eigs = eigs_tr;
+  // std::cout << "Eigs before NR" << '\n';
+  // std::cout << eigs << '\n';
   epsilon_tr = 0.5*log(eigs_tr.array());
   epsilon = epsilon_tr;
 
@@ -263,12 +296,21 @@ MatrixXd viscous_branch::update_intervar_newton_principal(MatrixXd& F){
       compute_residual_principal();
       compute_tangent_principal();
       compute_tangent_nr_principal();
-      epsilon += Tangent_principal.colPivHouseholderQr().solve(res_principal);
-      eigs = exp(epsilon.array());
+      depsilon = -1.0*Tangent_principal.colPivHouseholderQr().solve(res_principal);
+      epsilon += depsilon;
+      eigs = exp(2.0*epsilon.array());
+
     }
-    while (res_principal.norm() < 1E-7);
+    while (res_principal.norm() > 1E-5);
   be = eigs(0)*v0*v0.transpose()+eigs(1)*v1*v1.transpose()+eigs(2)*v2*v2.transpose();
+  // std::cout << "be " << '\n';
+  // std::cout << be << '\n';
   C_i = F.transpose()*(be.inverse()*F);
+  // std::cout << "b" << '\n';
+  // std::cout << F*F.transpose() << '\n';
+
+  // std::cout << "C_i" << '\n';
+  // std::cout << C_i << '\n';
   return C_i;
 };
 
