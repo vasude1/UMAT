@@ -11,8 +11,8 @@ using namespace Eigen;
 using namespace std;
 
 #include "Parser.h"
-#include "Material.h"
-#include "viscous_branch.h"
+#include "/home/vasudevan/PhD/Code/UMAT/Material.h"
+#include "/home/vasudevan/PhD/Code/UMAT/viscous_branch.h"
 
 extern "C"
 //
@@ -24,7 +24,7 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
 {
   // std::cout << "Begin" << '\n';
 // PLANE STRESS ONLY
-  int number_branches = 8;
+  int number_branches = 10;
   MatrixXd F =  MatrixXd::Zero(3,3);
 	MatrixXd F_old =  MatrixXd::Zero(3,3);
   parse_deformation_variables(DFGRD0,DFGRD1,F,F_old);
@@ -59,48 +59,43 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
   *SSE = 0.0;
   *SCD = 0.0;
   //
-  for(int i=0;i<number_branches;++i)
-  {
-      std::cout << i << '\n';
-      (branch+i)->delta_t = *DTIME;
-      (branch+i)->Material::set_material(stiff_ratio[i],relaxation_time[i]);
-      // std::cout << *(ivar+i) << '\n';
-      (branch+i)->set_inelastic_strain(*(ivar+i));
-      (branch+i)->compute_be_tr(F);
-      *(ivar+i)=(branch+i)->update_intervar_newton_principal(F);
-      temp_tau = (branch+i)->compute_stress_tau(branch[i].be);
-      tau += temp_tau;
-      std::cout << temp_tau << '\n';
-      tangent += (branch+i)->rotate_mat_tan();
-      *SSE += (branch+i)->compute_strain_energy(branch[i].be);
-      *SCD += (branch+i)->compute_dissipation();
-      // std::cout << *(ivar+i) << '\n';
-
-  }
+  // for(int i=0;i<number_branches;++i)
+  // {
+  //     // std::cout << i << '\n';
+  //     (branch+i)->delta_t = *DTIME;
+  //     (branch+i)->Material::set_material(stiff_ratio[i],relaxation_time[i]);
+  //     // std::cout << *(ivar+i) << '\n';
+  //     (branch+i)->set_inelastic_strain(*(ivar+i));
+  //     (branch+i)->compute_be_tr(F);
+  //     *(ivar+i)=(branch+i)->update_intervar_newton_principal(F);
+  //     temp_tau = (branch+i)->compute_stress_tau(branch[i].be);
+  //     tau += temp_tau;
+  //     tangent += (branch+i)->rotate_mat_tan(0);
+  //     *SSE += (branch+i)->compute_strain_energy(branch[i].be);
+  //     *SCD += (branch+i)->compute_dissipation();
+  //     // std::cout << *(ivar+i) << '\n';
+  //
+  // }
   // std::cout << "Elastic Branch" << '\n';
   hyper_branch.Material::set_material(1.0,1E7);
   hyper_branch.set_inelastic_strain(MatrixXd::Identity(3,3));
   hyper_branch.compute_be_tr(F);
   hyper_branch.update_intervar_newton_principal(F);
   tau += hyper_branch.compute_stress_tau(b);
-  tangent += hyper_branch.rotate_mat_tan();
+  tangent += hyper_branch.rotate_mat_tan(1);
   *SSE += hyper_branch.compute_strain_energy(b);
 
   MatrixXd tau_temp = tau;
   deviatoric_projector(tau);
   double p = tau(2,2);
   tau += -p*MatrixXd::Identity(3,3);
-  // std::cout << "tangent_before_corrected" << '\n';
-  // std::cout << tangent << '\n';
   deviatoric_projector_tangent(p,tau_temp,tangent);
   // tangent = (tangent + tangent.transpose());
+
+  // throw;
   return_stress(STRESS,tau);
   return_tangent(DDSDDE,tangent);
   return_internalvar(STATEV,ivar,number_branches);
-  std::cout << "tau_corrected" << '\n';
-  std::cout << tau << '\n';
-  std::cout << "tangent_corrected" << '\n';
-  std::cout << tangent << '\n';
 
 return;
 };

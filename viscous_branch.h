@@ -47,8 +47,8 @@ class viscous_branch: public Material
   void compute_tangent_principal();
   void compute_tangent_nr_principal();
   void compute_residual_principal();
-  void mat_tan_principal();
-  MatrixXd rotate_mat_tan();
+  void mat_tan_principal(bool);
+  MatrixXd rotate_mat_tan(bool);
   MatrixXd update_intervar_newton_principal(MatrixXd&);
 
   friend void convert_matrix_to_vector(MatrixXd&, MatrixXd&);

@@ -50,7 +50,7 @@ void deviatoric_projector_tangent(double p,MatrixXd& tau,MatrixXd& tangent){
 
   VectorXd tau_row(6);
   double tr_tau = tau(0,0)+tau(1,1)+tau(2,2);
-
+//
   tau_row(0) = tau(0,0)-tr_tau/3.0;
   tau_row(1) = tau(1,1)-tr_tau/3.0;
   tau_row(2) = tau(2,2)-tr_tau/3.0;
@@ -94,7 +94,7 @@ void deviatoric_projector_tangent(double p,MatrixXd& tau,MatrixXd& tangent){
   //   }
   // }
   // tangent(seq(0,2),seq(0,2)).array() -= p;
-  //
+
   tau_row(0) = tau(0,0);
   tau_row(1) = tau(1,1);
   tau_row(2) = tau(2,2);
