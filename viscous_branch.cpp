@@ -25,6 +25,50 @@ void viscous_branch::compute_be_tr(MatrixXd& F){
   v1 = es.eigenvectors().col(1).real()(seq(0,2),0);
   v2 = es.eigenvectors().col(2).real()(seq(0,2),0);
 
+  double sqrt_two = sqrt(2.0);
+
+  // Rotation_mat(0,0) = v0(0)*v0(0);
+  // Rotation_mat(1,0) = v0(1)*v0(1);
+  // Rotation_mat(2,0) = v0(2)*v0(2);
+  // Rotation_mat(3,0) = v0(0)*v0(1);
+  // Rotation_mat(4,0) = v0(1)*v0(2);
+  // Rotation_mat(5,0) = v0(2)*v0(0);
+  //
+  // Rotation_mat(0,1) = v1(0)*v1(0);
+  // Rotation_mat(1,1) = v1(1)*v1(1);
+  // Rotation_mat(2,1) = v1(2)*v1(2);
+  // Rotation_mat(3,1) = v1(0)*v1(1);
+  // Rotation_mat(4,1) = v1(1)*v1(2);
+  // Rotation_mat(5,1) = v1(2)*v1(0);
+  //
+  // Rotation_mat(0,2) = v2(0)*v2(0);
+  // Rotation_mat(1,2) = v2(1)*v2(1);
+  // Rotation_mat(2,2) = v2(2)*v2(2);
+  // Rotation_mat(3,2) = v2(0)*v2(1);
+  // Rotation_mat(4,2) = v2(1)*v2(2);
+  // Rotation_mat(5,2) = v2(2)*v2(0);
+  //
+  // Rotation_mat(0,3) = 2.0*v0(0)*v1(0);
+  // Rotation_mat(1,3) = 2.0*v0(1)*v1(1);
+  // Rotation_mat(2,3) = 2.0*v0(2)*v1(2);
+  // Rotation_mat(3,3) = v0(0)*v1(1)+v1(0)*v0(1);
+  // Rotation_mat(4,3) = v0(1)*v1(2)+v1(1)*v0(2);
+  // Rotation_mat(5,3) = v0(2)*v1(0)+v1(2)*v0(0);
+  //
+  // Rotation_mat(0,4) = 2.0*v1(0)*v2(0);
+  // Rotation_mat(1,4) = 2.0*v1(1)*v2(1);
+  // Rotation_mat(2,4) = 2.0*v1(2)*v2(2);
+  // Rotation_mat(3,4) = v1(0)*v2(1)+v2(0)*v1(1);
+  // Rotation_mat(4,4) = v1(1)*v2(2)+v1(2)*v2(1);
+  // Rotation_mat(5,4) = v2(0)*v1(2)+v2(2)*v1(0);
+  //
+  // Rotation_mat(0,5) = 2.0*v2(0)*v0(0);
+  // Rotation_mat(1,5) = 2.0*v2(1)*v0(1);
+  // Rotation_mat(2,5) = 2.0*v2(2)*v0(2);
+  // Rotation_mat(3,5) = v2(0)*v0(1)+v0(0)*v2(1);
+  // Rotation_mat(4,5) = v0(1)*v2(2)+v2(1)*v0(2);
+  // Rotation_mat(5,5) = v2(2)*v0(0)+v2(0)*v0(2);
+
   Rotation_mat(0,0) = v0(0)*v0(0);
   Rotation_mat(1,0) = v1(0)*v1(0);
   Rotation_mat(2,0) = v2(0)*v2(0);
@@ -64,8 +108,10 @@ void viscous_branch::compute_be_tr(MatrixXd& F){
   Rotation_mat(1,5) = 2.0*v1(2)*v1(0);
   Rotation_mat(2,5) = 2.0*v2(2)*v2(0);
   Rotation_mat(3,5) = v0(2)*v1(0)+v0(0)*v1(2);
-  Rotation_mat(4,5) = v1(2)*v2(0)+v1(0)*v2(2);
-  Rotation_mat(5,5) = v2(2)*v0(0)+v2(0)*v1(2);
+  Rotation_mat(4,5) = v1(2)*v2(1)+v1(0)*v2(2);
+  Rotation_mat(5,5) = v2(2)*v0(0)+v2(0)*v0(2);
+
+  // std::cout << Rotation_mat*Rotation_mat.transpose() << '\n';
 };
 
 void viscous_branch::compute_invar(MatrixXd C, bool a){
@@ -163,21 +209,21 @@ void viscous_branch::compute_tangent_principal(){
   Stiff_principal(0,0) = dW_dI1+dW_dI2*(I1-lambda_A)+lambda_A*(d2W_dI1I1+d2W_dI1I2*(I1-lambda_A)+(I1-lambda_A)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_A)));
   Stiff_principal(0,0) *= 2*lambda_A;
   Stiff_principal(1,0) = d2W_dI1I1+d2W_dI1I2*(I1-lambda_B)+(I1-lambda_A)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_B))+dW_dI2;
-  Stiff_principal(1,0) *= 2*lambda_B;
+  Stiff_principal(1,0) *= 2*lambda_A*lambda_B;
   Stiff_principal(2,0) = d2W_dI1I1+d2W_dI1I2*(I1-lambda_C)+(I1-lambda_A)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_C))+dW_dI2;
-  Stiff_principal(2,0) *= 2*lambda_C;
+  Stiff_principal(2,0) *= 2*lambda_A*lambda_C;
 
   Stiff_principal(0,1) = d2W_dI1I1+d2W_dI1I2*(I1-lambda_A)+(I1-lambda_B)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_A))+dW_dI2;
-  Stiff_principal(0,1) *= 2*lambda_A;
+  Stiff_principal(0,1) *= 2*lambda_A*lambda_B;
   Stiff_principal(1,1) = dW_dI1+dW_dI2*(I1-lambda_B)+lambda_B*(d2W_dI1I1+d2W_dI1I2*(I1-lambda_B)+(I1-lambda_B)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_B)));
   Stiff_principal(1,1) *= 2*lambda_B;
   Stiff_principal(2,1) = d2W_dI1I1+d2W_dI1I2*(I1-lambda_C)+(I1-lambda_B)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_C))+dW_dI2;
-  Stiff_principal(2,1) *= 2*lambda_C;
+  Stiff_principal(2,1) *= 2*lambda_C*lambda_B;
 
   Stiff_principal(0,2) = d2W_dI1I1+d2W_dI1I2*(I1-lambda_A)+(I1-lambda_C)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_A))+dW_dI2;
-  Stiff_principal(0,2) *= 2*lambda_A;
+  Stiff_principal(0,2) *= 2*lambda_A*lambda_C;
   Stiff_principal(1,2) = d2W_dI1I1+d2W_dI1I2*(I1-lambda_B)+(I1-lambda_C)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_B))+dW_dI2;
-  Stiff_principal(1,2) *= 2*lambda_B;
+  Stiff_principal(1,2) *= 2*lambda_B*lambda_C;
   Stiff_principal(2,2) = dW_dI1+dW_dI2*(I1-lambda_C)+lambda_C*(d2W_dI1I1+d2W_dI1I2*(I1-lambda_C)+(I1-lambda_C)*(d2W_dI1I2+d2W_dI2I2*(I1-lambda_C)));
   Stiff_principal(2,2) *= 2*lambda_C;
 
@@ -228,16 +274,10 @@ void viscous_branch::compute_residual_principal(){
 
 void viscous_branch::mat_tan_principal(bool elastic){
 
-
-
-  // std::cout << "C_alg" << '\n';
-  // std::cout << C_alg << '\n';
-  if(!elastic)
-  {
-    MatrixXd C_alg =  Stiff_principal*(Tangent_principal.inverse());
-    mat_tan(0,0) = C_alg(0,0) - 2*tau_principal(0);
-    mat_tan(1,1) = C_alg(1,1) - 2*tau_principal(1);
-    mat_tan(2,2) = C_alg(2,2) - 2*tau_principal(2);
+    C_alg =  Stiff_principal*(Tangent_principal.inverse());
+    mat_tan(0,0) = C_alg(0,0)-2.0*tau_principal(0);
+    mat_tan(1,1) = C_alg(1,1)-2.0*tau_principal(1);
+    mat_tan(2,2) = C_alg(2,2)-2.0*tau_principal(2);
     mat_tan(0,1) = C_alg(0,1);
     mat_tan(0,2) = C_alg(0,2);
     mat_tan(1,2) = C_alg(1,2);
@@ -245,71 +285,50 @@ void viscous_branch::mat_tan_principal(bool elastic){
     mat_tan(2,0) = C_alg(2,0);
     mat_tan(2,1) = C_alg(2,1);
 
-    if (abs(eigs_tr(0)-eigs_tr(1))<1E-2) {
-      mat_tan(3,3) = 0.5*(mat_tan(0,0)-mat_tan(1,0));
-    }
-    else {
-      mat_tan(3,3) = (tau_principal(1)/eigs_tr(1) - tau_principal(0)/eigs_tr(0))/(eigs_tr(1) - eigs_tr(0))*eigs_tr(1)*eigs_tr(0);
-    }
 
-    if (abs(eigs_tr(1)-eigs_tr(2))<1E-2) {
-      mat_tan(4,4) = 0.5*(mat_tan(1,1)-mat_tan(2,1));
-    }
-    else {
-      mat_tan(4,4) = (tau_principal(2)/eigs_tr(2) - tau_principal(1)/eigs_tr(1))/(eigs_tr(2) - eigs_tr(1))*eigs_tr(2)*eigs_tr(1);
-    }
-
-    if (abs(eigs_tr(0)-eigs_tr(2))<1E-2) {
-      mat_tan(5,5) = 0.5*(mat_tan(2,2)-mat_tan(2,0));
-    }
-    else {
-      mat_tan(5,5) = (tau_principal(2)/eigs_tr(2) - tau_principal(0)/eigs_tr(0))/(eigs_tr(2) - eigs_tr(0))*eigs_tr(2)*eigs_tr(0);
-    }
-  }
-
-  if(elastic)
-  {
-    mat_tan(0,0) = Stiff_principal(0,0);
-    mat_tan(1,1) = Stiff_principal(1,1);
-    mat_tan(2,2) = Stiff_principal(2,2);
-    // mat_tan(0,1) = Stiff_principal(0,1);
-    // mat_tan(0,2) = Stiff_principal(0,2);
-    // mat_tan(1,2) = Stiff_principal(1,2);
-    // mat_tan(1,0) = Stiff_principal(1,0);
-    // mat_tan(2,0) = Stiff_principal(2,0);
-    // mat_tan(2,1) = Stiff_principal(2,1);
-
-    if (abs(eigs_tr(0)-eigs_tr(1))<1E-2) {
-      mat_tan(3,3) = 0.5*(mat_tan(0,0)-mat_tan(1,0));
+    if (eigs_tr(0)==eigs_tr(1)) {
+      mat_tan(3,3) = 0.5*(C_alg(0,0)-C_alg(1,0))-tau_principal(0);
     }
     else {
       mat_tan(3,3) = (tau_principal(0)*eigs_tr(1) - tau_principal(1)*eigs_tr(0))/(eigs_tr(0) - eigs_tr(1));
     }
 
-    if (abs(eigs_tr(1)-eigs_tr(2))<1E-2) {
-      mat_tan(4,4) = 0.5*(mat_tan(1,1)-mat_tan(2,1));
+    if (eigs_tr(1)==eigs_tr(2)) {
+      mat_tan(4,4) = 0.5*(C_alg(1,1)-C_alg(2,1))-tau_principal(1);
     }
     else {
       mat_tan(4,4) = (tau_principal(1)*eigs_tr(2) - tau_principal(2)*eigs_tr(1))/(eigs_tr(1) - eigs_tr(2));
     }
 
-    if (abs(eigs_tr(0)-eigs_tr(2))<1E-2) {
-      mat_tan(5,5) = 0.5*(mat_tan(2,2)-mat_tan(2,0));
+    if (eigs_tr(0)==eigs_tr(2)) {
+      mat_tan(5,5) = 0.5*(C_alg(2,2)-C_alg(2,0))-tau_principal(2);
     }
     else {
       mat_tan(5,5) = (tau_principal(2)*eigs_tr(0) - tau_principal(0)*eigs_tr(2))/(eigs_tr(2) - eigs_tr(0));
     }
 
-  }
+};
 
-  // std::cout << eigs_tr << '\n';
-  // std::cout << "Material tangent" << '\n';
-  // std::cout << mat_tan<< '\n';
+MatrixXd viscous_branch::mat_tan_volu(){
+
+    for(int i=0;i<3;++i){
+        mat_tan_vol(seq(0,2),i).array() = -1.0*(C_alg(2,i)-1.0/3.0*(C_alg(0,i)+C_alg(1,i)+C_alg(2,i)));
+    }
+    // mat_tan_vol = mat_tan_vol.transpose();
+    mat_tan_vol = (Rotation_mat*mat_tan_vol)*(Rotation_mat.transpose());
+    // std::cout << C_alg << '\n';
+    // std::cout << mat_tan_vol << '\n';
+    return mat_tan_vol;
 };
 
 MatrixXd viscous_branch::rotate_mat_tan(bool elastic){
   mat_tan_principal(elastic);
-  mat_tan = (Rotation_mat*mat_tan)*Rotation_mat.transpose();
+  // std::cout << "Before rotation" << '\n';
+  // std::cout << mat_tan << '\n';
+  // std::cout << Rotation_mat.transpose() * Rotation_mat << '\n';
+  mat_tan = (Rotation_mat*mat_tan)*(Rotation_mat.transpose());
+  // std::cout << "After rotation" << '\n';
+  // std::cout << mat_tan << '\n';
   // std::cout << "Mat tan final" << '\n';
   // std::cout << mat_tan << '\n';
   return mat_tan;

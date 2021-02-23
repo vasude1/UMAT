@@ -18,11 +18,12 @@ class viscous_branch: public Material
   Matrix3d C_i,be_tr,be;
   Vector3d res_principal,eigs,eigs_tr;
 
-  Matrix3d Stiff_principal,Tangent_principal;
+  Matrix3d Stiff_principal,Tangent_principal,C_alg;
 
   Matrix3d tau;
   Vector3d tau_principal,epsilon, epsilon_tr;
   MatrixXd mat_tan = MatrixXd::Zero(6,6);
+  MatrixXd mat_tan_vol = MatrixXd::Zero(6,6);
   Matrix3d mat_tan_rotated;
   MatrixXd Rotation_mat = mat_tan;
 
@@ -49,6 +50,7 @@ class viscous_branch: public Material
   void compute_residual_principal();
   void mat_tan_principal(bool);
   MatrixXd rotate_mat_tan(bool);
+  MatrixXd mat_tan_volu();
   MatrixXd update_intervar_newton_principal(MatrixXd&);
 
   friend void convert_matrix_to_vector(MatrixXd&, MatrixXd&);

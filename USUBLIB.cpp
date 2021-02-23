@@ -11,8 +11,8 @@ using namespace Eigen;
 using namespace std;
 
 #include "Parser.h"
-#include "/home/vasudevan/PhD/Code/UMAT/Material.h"
-#include "/home/vasudevan/PhD/Code/UMAT/viscous_branch.h"
+#include "/home/vasudevan/PhD/Code/UMAT/perfect_incomp/Material.h"
+#include "/home/vasudevan/PhD/Code/UMAT/perfect_incomp/viscous_branch.h"
 
 extern "C"
 //
@@ -22,14 +22,18 @@ double* TIME,double* DTIME,double* TEMP,double* DTEMP,double* PREDEF,double* DPR
 int& NSTATV,double* PROPS,int& NPROPS,double* COORDS,double* DROT,double* PNEWDT,double* CELENT,
 double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP,int& KINC)
 {
+  // std::cout << NOEL << '\n';
+
   // std::cout << "Begin" << '\n';
 // PLANE STRESS ONLY
   int number_branches = 10;
   MatrixXd F =  MatrixXd::Zero(3,3);
 	MatrixXd F_old =  MatrixXd::Zero(3,3);
   parse_deformation_variables(DFGRD0,DFGRD1,F,F_old);
+
   MatrixXd C = F.transpose()*F;
   MatrixXd b = F*F.transpose();
+  MatrixXd C_inv = C.inverse();
 
   // std::cout << "C: " << '\n';
   // std::cout << C << '\n';
@@ -54,11 +58,13 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
   MatrixXd tau = MatrixXd::Zero(3,3);
   Matrix3d temp_tau;
   MatrixXd tangent = MatrixXd::Zero(6,6);
+  MatrixXd tangent_volu = MatrixXd::Zero(6,6);
+
 
 
   *SSE = 0.0;
   *SCD = 0.0;
-  //
+  // //
   // for(int i=0;i<number_branches;++i)
   // {
   //     // std::cout << i << '\n';
@@ -71,6 +77,7 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
   //     temp_tau = (branch+i)->compute_stress_tau(branch[i].be);
   //     tau += temp_tau;
   //     tangent += (branch+i)->rotate_mat_tan(0);
+  //     tangent_volu += (branch+i)->mat_tan_volu();
   //     *SSE += (branch+i)->compute_strain_energy(branch[i].be);
   //     *SCD += (branch+i)->compute_dissipation();
   //     // std::cout << *(ivar+i) << '\n';
@@ -83,15 +90,19 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
   hyper_branch.update_intervar_newton_principal(F);
   tau += hyper_branch.compute_stress_tau(b);
   tangent += hyper_branch.rotate_mat_tan(1);
+  tangent_volu += hyper_branch.mat_tan_volu();
+  // tangent_volu = 0.5*(tangent_volu+tangent_volu.transpose());
   *SSE += hyper_branch.compute_strain_energy(b);
 
   MatrixXd tau_temp = tau;
-  deviatoric_projector(tau);
-  double p = tau(2,2);
-  tau += -p*MatrixXd::Identity(3,3);
-  deviatoric_projector_tangent(p,tau_temp,tangent);
-  // tangent = (tangent + tangent.transpose());
 
+  deviatoric_projector(tau);
+  double p = -1.0*tau(2,2);
+  tau += p*MatrixXd::Identity(3,3);
+  deviatoric_projector_tangent(p,tau_temp,tangent,C_inv);
+  tangent = tangent + tangent_volu;
+  // std::cout << "tau " << '\n';
+  // std::cout << tau << '\n';
   // throw;
   return_stress(STRESS,tau);
   return_tangent(DDSDDE,tangent);
