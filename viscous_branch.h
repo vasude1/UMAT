@@ -15,8 +15,9 @@ using namespace std;
 class viscous_branch: public Material
 {
   public:
-  Matrix3d C_i,be_tr,be;
+  Matrix3d C_i,be_tr,be,be_inverse;
   Vector3d res_principal,eigs,eigs_tr;
+  Vector3d depsilon;
 
   Matrix3d Stiff_principal,Tangent_principal,C_alg;
 
@@ -25,10 +26,10 @@ class viscous_branch: public Material
   MatrixXd mat_tan = MatrixXd::Zero(6,6);
   MatrixXd mat_tan_vol = MatrixXd::Zero(6,6);
   Matrix3d mat_tan_rotated;
-  MatrixXd Rotation_mat = mat_tan;
+  MatrixXd Rotation_mat = MatrixXd::Zero(6,6);
 
   double lambda_A,lambda_B,lambda_C,eta;
-  Vector3d v0,v1,v2;
+  Vector3d v0,v1,v2,v0_,v1_,v2_;
   double invar[2];
   double derivative[2];
   double second_derivative[2][2];
@@ -42,7 +43,7 @@ class viscous_branch: public Material
   void compute_derivative();
   void compute_second_derivative();
   void compute_stress_tau_principal();
-  MatrixXd compute_stress_tau(MatrixXd);
+  MatrixXd compute_stress_tau();
   double compute_strain_energy(MatrixXd);
   double compute_dissipation();
   void compute_tangent_principal();
