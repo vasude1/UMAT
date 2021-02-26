@@ -108,7 +108,6 @@ void deviatoric_projector_tangent(double p,MatrixXd tau,MatrixXd& tangent, Matri
   tangent(5,5) += -p;
 
   tangent(seq(0,2),seq(0,2)).array() += p;
-
   // //
   VectorXd tau_row(6);
   // tau_row = tau_iso;
@@ -120,7 +119,7 @@ void deviatoric_projector_tangent(double p,MatrixXd tau,MatrixXd& tangent, Matri
   tau_row(3) = tau(0,1);
   tau_row(4) = tau(1,2);
   tau_row(5) = tau(0,2);
-  //
+  // //
 
 
   tangent(0,0) += 2*tau_row(0);
@@ -149,12 +148,12 @@ void deviatoric_projector_tangent(double p,MatrixXd tau,MatrixXd& tangent, Matri
   tangent(3,4) += 0.5*tau_row(5);
   tangent(3,5) += 0.5*tau_row(4);
   tangent(4,5) += 0.5*tau_row(3);
-
+  // cout << tangent <<endl;
 //
 };
 
 void return_stress(double* stress, MatrixXd tau){
-  *(stress+0) = tau(0,0);
+  *(stress) = tau(0,0);
   *(stress+1) = tau(1,1);
   *(stress+2) = tau(0,1);
 };
@@ -162,13 +161,13 @@ void return_stress(double* stress, MatrixXd tau){
 void return_tangent(double* DDSDDE, MatrixXd tangent){
   *(DDSDDE+0) = tangent(0,0);
   *(DDSDDE+1) = tangent(1,0);
-  *(DDSDDE+2) = tangent(4,0);
+  *(DDSDDE+2) = tangent(3,0);
   *(DDSDDE+3) = tangent(0,1);
   *(DDSDDE+4) = tangent(1,1);
-  *(DDSDDE+5) = tangent(4,1);
-  *(DDSDDE+6) = tangent(0,4);
-  *(DDSDDE+7) = tangent(1,4);
-  *(DDSDDE+8) = tangent(4,4);
+  *(DDSDDE+5) = tangent(3,1);
+  *(DDSDDE+6) = tangent(0,3);
+  *(DDSDDE+7) = tangent(1,3);
+  *(DDSDDE+8) = tangent(3,3);
 };
 
 void return_internalvar(double* STATEV,Matrix3d* ivar, int number_branches){
