@@ -43,16 +43,22 @@ class viscous_branch: public Material
   void compute_derivative();
   void compute_second_derivative();
   void compute_stress_tau_principal();
+  void compute_stress_tau_principal_hencky();
   MatrixXd compute_stress_tau();
   double compute_strain_energy(MatrixXd);
+  double compute_strain_energy_hencky(MatrixXd);
   double compute_dissipation();
   void compute_tangent_principal();
+  void compute_tangent_principal_hencky();
   void compute_tangent_nr_principal();
   void compute_residual_principal();
+  void compute_residual_principal_hencky();
   void mat_tan_principal(bool);
   MatrixXd rotate_mat_tan(bool);
   MatrixXd mat_tan_volu();
   MatrixXd update_intervar_newton_principal(MatrixXd&);
+  MatrixXd update_intervar_newton_principal_hencky(MatrixXd&);
+
 
   friend void convert_matrix_to_vector(MatrixXd&, MatrixXd&);
   friend void convert_vector_to_matrix(MatrixXd&, MatrixXd&);

@@ -126,6 +126,16 @@ void viscous_branch::compute_stress_tau_principal(){
   tau_principal = 2*tau_principal;
 };
 
+void viscous_branch::compute_stress_tau_principal_hencky(){
+
+  dW_dI1 = derivative[0];
+  dW_dI2 = derivative[1];
+
+  tau_principal(0) = dW_dI1*epsilon(0);
+  tau_principal(1) = dW_dI1*epsilon(1);
+  tau_principal(2) = dW_dI1*epsilon(2);
+};
+
 MatrixXd viscous_branch::compute_stress_tau(){
   tau = tau_principal(0)*v0_*v0_.transpose()+tau_principal(1)*v1_*v1_.transpose()+tau_principal(2)*v2_*v2_.transpose();
   return tau;
@@ -139,6 +149,12 @@ double viscous_branch::compute_strain_energy(MatrixXd _be){
   psi += c[5]*pow(I1-3,3.0)+c[6]*pow(I1-3,2.0)*(I2-3);
   psi += c[7]*(I1-3)*pow(I2-3,2.0)+c[8]*pow(I2-3,3.0);
   return psi;
+};
+
+double viscous_branch::compute_strain_energy_hencky(MatrixXd _be){
+  double psi = 0.0;
+  psi += epsilon.squaredNorm();
+  return 0.5*dW_dI1*psi;
 };
 
 double viscous_branch::compute_dissipation(){
@@ -185,6 +201,12 @@ void viscous_branch::compute_tangent_principal(){
 };
 
 
+void viscous_branch::compute_tangent_principal_hencky(){
+  compute_second_derivative();
+  Stiff_principal = dW_dI1*MatrixXd::Identity(3,3);
+
+};
+
 void viscous_branch::compute_tangent_nr_principal(){
   Tangent_principal = delta_t/2.0/eta*Stiff_principal+MatrixXd::Identity(3,3);
   for(int i=0;i<3;++i){
@@ -199,6 +221,21 @@ void viscous_branch::compute_residual_principal(){
   compute_invar(eigs,0);
   compute_derivative();
   compute_stress_tau_principal();
+
+  I1 = invar[0];
+  I2 = invar[1];
+  dW_dI1 = derivative[0];
+  dW_dI2 = derivative[1];
+
+  res_principal = epsilon + delta_t/2.0/eta*(tau_principal - 1.0/3.0*tau_principal.sum()*VectorXd::Ones(3)) - epsilon_tr;
+};
+
+
+void viscous_branch::compute_residual_principal_hencky(){
+
+  compute_invar(eigs,0);
+  compute_derivative();
+  compute_stress_tau_principal_hencky();
 
   I1 = invar[0];
   I2 = invar[1];
@@ -257,7 +294,6 @@ MatrixXd viscous_branch::update_intervar_newton_principal(MatrixXd& F){
   eigs = eigs_tr;
   epsilon_tr = 0.5*log(eigs_tr.array());
   epsilon = epsilon_tr;
-
     do {
       compute_residual_principal();
       compute_tangent_principal();
@@ -265,15 +301,36 @@ MatrixXd viscous_branch::update_intervar_newton_principal(MatrixXd& F){
       depsilon = -1.0*Tangent_principal.householderQr().solve(res_principal);
       epsilon += depsilon;
       eigs = exp(2.0*epsilon.array());
-
     }
-    while (res_principal.norm() > 1E-2);
+    while (res_principal.norm() > 1E-4);
   be = eigs(0)*v0_*v0_.transpose()+eigs(1)*v1_*v1_.transpose()+eigs(2)*v2_*v2_.transpose();
   be_inverse = 1.0/eigs(0)*v0_*v0_.transpose()+1.0/eigs(1)*v1_*v1_.transpose()+1.0/eigs(2)*v2_*v2_.transpose();
   C_i = F.transpose()*(be_inverse*F);
   return C_i;
 };
 
+
+MatrixXd viscous_branch::update_intervar_newton_principal_hencky(MatrixXd& F){
+  eigs = eigs_tr;
+  epsilon_tr = 0.5*log(eigs_tr.array());
+  epsilon = epsilon_tr;
+
+
+  compute_residual_principal_hencky();
+  compute_tangent_principal_hencky();
+  compute_tangent_nr_principal();
+  depsilon = -1.0*Tangent_principal.householderQr().solve(res_principal);
+  epsilon += depsilon;
+  eigs = exp(2.0*epsilon.array());
+  compute_residual_principal_hencky();
+  compute_tangent_principal_hencky();
+  compute_tangent_nr_principal();
+
+  be = eigs(0)*v0_*v0_.transpose()+eigs(1)*v1_*v1_.transpose()+eigs(2)*v2_*v2_.transpose();
+  be_inverse = 1.0/eigs(0)*v0_*v0_.transpose()+1.0/eigs(1)*v1_*v1_.transpose()+1.0/eigs(2)*v2_*v2_.transpose();
+  C_i = F.transpose()*(be_inverse*F);
+  return C_i;
+};
 
 void convert_matrix_to_vector(MatrixXd& Matrix, MatrixXd& Vector){
   Vector(0) = Matrix(0,0);
