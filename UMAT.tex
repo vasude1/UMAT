@@ -49,7 +49,7 @@ Using the above expressions in the internal dissipation inequality gives the exp
 \end{equation}
 $\bfS_{EQ}$ and $\bfS_{NEQ}$ denote the elastic and viscous contributions to the total stress. $DEV$ represents the deviatoric projection and the first term is a consequence of the incompressibility constraint. These stresses are given by  
 \begin{gather}
-\bfS_{EQ} = 2\parder{\psi_{EQ}}{\bfC} \\
+\bfS_{EQ} = 2\parder{\psi_{EQ}}{\bfCbar} \\
 \bfS_{NEQ} = 2 \bfF_i^{-1} \parder{\psi_{NEQ}}{\bfC_e}\bfF_i^{-T}
 \end{gather}
 and the deviatoric projector by
@@ -71,7 +71,7 @@ $\mathbb{P}$ is the deviatoric projector in the deformed configuration defined a
 \end{equation}
 The dissipation inequality becomes 
 \begin{equation}
--\boldsymbol{\tau}_{NEQ}^{iso}:\frac{1}{2} \mathcal{L}_v\bfb_e. \bfb_e^{-1} \geq 0
+-\boldsymbol{\tau}_{NEQ}:\frac{1}{2} \mathcal{L}_v\bfb_e. \bfb_e^{-1} \geq 0
 \label{fv:dissipationineq}
 \end{equation}
 where $\mathcal{L}_v\bfb_e$ denotes the Lie derivative of $\bfb_e$ defined as 
@@ -80,7 +80,7 @@ where $\mathcal{L}_v\bfb_e$ denotes the Lie derivative of $\bfb_e$ defined as
 \end{equation}
 The expression \ref{fv:dissipationineq} can be satisfied by specifying the evolution equation as
 \begin{equation}
--\frac{1}{2} \mathcal{L}_v\bfb_e. \bfb_e^{-1}  = \mathcal{V}^{-1} : \boldsymbol{\tau}_{NEQ}^{iso}
+-\frac{1}{2} \mathcal{L}_v\bfb_e. \bfb_e^{-1}  = \mathcal{V}^{-1} : \boldsymbol{\tau}_{NEQ}
 \label{fv:evolution}
 \end{equation}
 where $\mathcal{V}$ is a fourth order isotropic positive definite tensor possibly a function of $\bfb_e$. A slightly different equation has been proposed by \cite{Bergstrom1998}.
@@ -92,14 +92,14 @@ The integration of equation \ref{fv:dissipationineq} is carried out by a predict
 \end{equation}
 In the inelastic corrector step, the total deformation is assumed to be held fixed and so, $\mathcal{L}_v\bfb_e = \dot{\bfb}_e$. Using this in equation \ref{fv:evolution} gives
 \begin{equation}
-	\dot{\bfb}_e {\bfb}^{-1}_e = -2 \left[\mathcal{V}^{-1} : \boldsymbol{\tau}_{NEQ}^{iso} \right]
+	\dot{\bfb}_e {\bfb}^{-1}_e = -2 \left[\mathcal{V}^{-1} : \boldsymbol{\tau}_{NEQ} \right]
 \end{equation}
 The above equation can be integrated using the exponential mapping technique. The resulting expression is 
 \begin{equation}
-	{\bfb}_e  = \exp  \left[ -2 \int_{t_{n-1}}^{t_n} \mathcal{V}^{-1} : \boldsymbol{\tau}_{NEQ}^{iso} \diff t \right] \bfb_e^{tr}
+	{\bfb}_e  = \exp  \left[ -2 \int_{t_{n-1}}^{t_n} \mathcal{V}^{-1} : \boldsymbol{\tau}_{NEQ} \diff t \right] \bfb_e^{tr}
 \end{equation}
 \begin{equation}
-	({\bfb}_e)_{t_n}  \approx \exp  \left[ -2 \Delta t (\mathcal{V}^{-1} : \boldsymbol{\tau}_{NEQ}^{iso})_{t=t_n} \right] \bfb_e^{tr}
+	({\bfb}_e)_{t_n}  \approx \exp  \left[ -2 \Delta t (\mathcal{V}^{-1} : \boldsymbol{\tau}_{NEQ})_{t=t_n} \right] \bfb_e^{tr}
 	\label{fv:exponentialmapping}
 \end{equation}
 The above equation is first order accurate.
