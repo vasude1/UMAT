@@ -36,7 +36,7 @@ where $\bfC$ is the right Cauchy Green deformation tensor and $\bfQ_i$ are the i
 \end{equation}
 The evolution equations and the expression for the internal energy shall satisfy the internal dissipation inequality 
 \begin{equation}
-\frac{1}{2}\bfS:\dot{\bfC} - \dot{\psi} \geq 0.
+\mathcal{D} = \frac{1}{2}\bfS:\dot{\bfC} - \dot{\psi} \geq 0.
 \end{equation}
 Using a Maxwell type representation of the material, the Strain energy function can be split into equilibrium and non-equilibrium parts as
 \begin{equation}
@@ -56,7 +56,7 @@ and the deviatoric projector by
 \begin{equation}
 DEV\left[ \bullet\right] = \bullet - \frac{\bullet:\bfC}{3} \bfC^{-1}.
 \end{equation}
-The Kirchhoff stress is then given as
+The Kirchhoff stress is then obtained as
 \begin{equation}
 	\boldsymbol{\tau} = \bfF \bfS \bfF^T = pJ\bfI + {\bftau}^{iso} = -pJ\bfI + \mathbb{P}:\bar{\bftau},
 \end{equation}
@@ -71,7 +71,7 @@ $\mathbb{P}$ is the deviatoric projector in the deformed configuration defined a
 \end{equation}
 The dissipation inequality becomes 
 \begin{equation}
--\boldsymbol{\tau}_{NEQ}:\frac{1}{2} \mathcal{L}_v\bfb_e. \bfb_e^{-1} \geq 0
+\mathcal{D} = -\boldsymbol{\tau}_{NEQ}:\frac{1}{2} \mathcal{L}_v\bfb_e. \bfb_e^{-1} \geq 0
 \label{fv:dissipationineq}
 \end{equation}
 where $\mathcal{L}_v\bfb_e$ denotes the Lie derivative of $\bfb_e$ defined as 
@@ -136,41 +136,41 @@ DEV[\bfS_{IJ}] \parder{J^{-2/3}}{\bfC_{KL}}= -\frac{1}{3} J^{-2/3} DEV[\bfS_{IJ}
 \end{equation}
 In tensor notation, $DEV[S] \otimes \parder{J^{-2/3}}{\bfC} = -\frac{1}{3} J^{-2/3} DEV[\bfS]  \otimes {\bfC^{-1}}$. The next term is $\parder{\bfS^{iso}}{\bfC}$. Since $\bfS^{iso}$ is a function of $\bar{\bfC}$, the total derivative is computed using the chain rule.
 \begin{equation}
- \parder{\bfS^{iso}_{IJ}}{\bfC_{KL}} =  \parder{\bfS^{iso}_{IJ}}{\bar{\bfC}_{MN}} \parder{\bar{\bfC}_{MN}}{{\bfC}_{KL}}
+ 2\parder{\bfS^{iso}_{IJ}}{\bfC_{KL}} =  2\parder{\bfS^{iso}_{IJ}}{\bar{\bfC}_{MN}} \parder{\bar{\bfC}_{MN}}{{\bfC}_{KL}}
 \end{equation}
 The second derivative, written using indicial notation is $J^{-2/3}\left[\mathbb{I}_{MNKL}- \frac{1}{3} \bfC_{MN} \bfC^{-1}_{KL}   \right]$, where $\mathbb{I}$ is the fourth order identity tensor. using these in the above equation,
 \begin{equation}
-\parder{\bfS^{iso}_{IJ}}{\bfC_{KL}} =  J^{-2/3}\left[\bar{\mathfrak{C}}_{IJKL}- \frac{1}{3} \bar{\mathfrak{C}}_{IJMN} \bfC_{MN} \bfC^{-1}_{KL} \right]  
+2\parder{\bfS^{iso}_{IJ}}{\bfC_{KL}} =  J^{-2/3}\left[\bar{\mathfrak{C}}_{IJKL}- \frac{1}{3} \bar{\mathfrak{C}}_{IJMN} \bfC_{MN} \bfC^{-1}_{KL} \right]  
 \end{equation}
-where $\bar{\mathfrak{C}} = \parder{\bfS^{iso}}{\bfCbar}$. In tensor notation, $\parder{\bfS^{iso}}{\bfC} = J^{-2/3}\left[\bar{\mathfrak{C}}- \frac{\bar{\mathfrak{C}}: \bfC}{3}  \otimes \bfC^{-1} \right]$. The next term is $\frac{\bfS^{iso}:\bfC}{3}\bfC^{-1}$. Its derivative is computed using the chain rule as
+where $\bar{\mathfrak{C}} = 2\parder{\bfS^{iso}}{\bfCbar}$. In tensor notation, $\parder{\bfS^{iso}}{\bfC} = J^{-2/3}\left[\bar{\mathfrak{C}}- \frac{\bar{\mathfrak{C}}: \bfC}{3}  \otimes \bfC^{-1} \right]$. The next term is $\frac{\bfS^{iso}:\bfC}{3}\bfC^{-1}$. Its derivative is computed using the chain rule as
 \begin{equation}
 	\parder{\left( \frac{\bfS^{iso}:\bfC}{3}\bfC^{-1} \right)}{\bfC} = \frac{\bfS^{iso}:\bfC}{3} \parder{\bfCinv}{\bfC} + \bfCinv \otimes \parder{\frac{\bfS^{iso}:\bfC}{3}}{\bfC}.
 \end{equation} 
-The derivative $\parder{\bfCinv}{\bfC} = -\mathcal{I}$, where $\mathcal{I}_{IJKL} = \frac{1}{2} \left[ \bfCinv_{IK} \bfCinv_{JL} + \bfCinv_{IL} \bfCinv_{JK} \right] $. The secon term is again evaluated using chain rule.
+The derivative $\parder{\bfCinv}{\bfC} = -\mathcal{I}$, where $\mathcal{I}_{IJKL} = \frac{1}{2} \left[ \bfCinv_{IK} \bfCinv_{JL} + \bfCinv_{IL} \bfCinv_{JK} \right] $. The second term is again evaluated using chain rule.
 \begin{gather}
  	\parder{\frac{\bfS^{iso}_{IJ}\bfC_{JI}}{3}}{\bfC_{KL}} = \frac{1}{3} \left[  \parder{\bfS^{iso}_{IJ}}{\bfC_{KL}} \bfC_{JI} +  \bfS^{iso}_{IJ}  \parder{\bfC_{JI}}{\bfC_{KL}}   \right] 
 \end{gather}
 The first term has already been evaluated earlier. The second term can be seen to be $\bfS^{iso}_{IJ}  \parder{\bfC_{JI}}{\bfC_{KL}} = \bfS^{iso}_{KL}$. In tensor notation,
 \begin{equation}
-\parder{\left( \frac{\bfS^{iso}:\bfC}{3}\bfC^{-1} \right)}{\bfC} = -\frac{\bfS^{iso}:\bfC}{3} \mathcal{I}  + \frac{1}{3} \bfCinv \otimes \left\lbrace   \bfC:J^{-2/3} \left[\bar{\mathfrak{C}} - \frac{\bar{\mathfrak{C}}:\bfC}{3}\otimes\bfCinv  \right]  + \bfS^{iso}       \right\rbrace.
+2\parder{\left( \frac{\bfS^{iso}:\bfC}{3}\bfC^{-1} \right)}{\bfC} = -2\frac{\bfS^{iso}:\bfC}{3} \mathcal{I}  + \frac{1}{3} \bfCinv \otimes \left\lbrace   \bfC:J^{-2/3} \left[\bar{\mathfrak{C}} - \frac{\bar{\mathfrak{C}}:\bfC}{3}\otimes\bfCinv  \right]  + 2\bfS^{iso}       \right\rbrace.
 \end{equation}
 Combining all the above,
 \begin{multline}
-\frac{1}{2}\mathfrak{C} = -\frac{1}{3} J^{-2/3} DEV[\bfS]  \otimes {\bfC^{-1}} + J^{-2/3}\left[\bar{\mathfrak{C}}- \frac{\bar{\mathfrak{C}}: \bfC}{3}  \otimes \bfC^{-1} \right] +\frac{\bfS^{iso}:\bfC}{3} \mathcal{I}  - \\
-\frac{1}{3} \bfCinv \otimes \left\lbrace   \bfC:J^{-2/3} \left[\bar{\mathfrak{C}} - \frac{\bar{\mathfrak{C}}:\bfC}{3}\otimes\bfCinv  \right]  + \bfS^{iso}       \right\rbrace
+\mathfrak{C} = -\frac{2}{3} J^{-2/3} DEV[\bfS]  \otimes {\bfC^{-1}} + J^{-2/3}\left[\bar{\mathfrak{C}}- \frac{\bar{\mathfrak{C}}: \bfC}{3}  \otimes \bfC^{-1} \right] +2\frac{\bfS^{iso}:\bfC}{3} \mathcal{I}  - \\
+\frac{1}{3} \bfCinv \otimes \left\lbrace   \bfC:J^{-2/3} \left[\bar{\mathfrak{C}} - \frac{\bar{\mathfrak{C}}:\bfC}{3}\otimes\bfCinv  \right]  + 2 \bfS^{iso}       \right\rbrace
 \end{multline}
 Using $\bfS^{iso} = DEV[\bfS] + \frac{\bfS^{iso}:\bfC}{3} \bfCinv$, the above equation can be refined as 
 \begin{multline}
-\frac{1}{2}\mathfrak{C} = \frac{1}{2}\mathfrak{C}^0-\frac{1}{3} J^{-2/3} DEV[\bfS]  \otimes \bfCinv - -\frac{1}{3}J^{-2/3} \bfCinv \otimes  DEV[\bfS]  + 
-\frac{\bfS^{iso}:\bfC}{3}\left[ \mathcal{I} - \frac{1}{3} \bfCinv \otimes \bfCinv \right]
+\mathfrak{C} = \mathfrak{C}^0-\frac{2}{3} J^{-2/3} DEV[\bfS]  \otimes \bfCinv - -\frac{2}{3}J^{-2/3} \bfCinv \otimes  DEV[\bfS]  + 
+2\frac{\bfS^{iso}:\bfC}{3}\left[ \mathcal{I} - \frac{1}{3} \bfCinv \otimes \bfCinv \right]
 \end{multline}
 where
 \begin{equation}
-\frac{1}{2}\mathfrak{C}^0=   J^{-2/3}\left[\bar{\mathfrak{C}} - \frac{\bar{\mathfrak{C}}: \bfC}{3}  \otimes \bfC^{-1} - \bfCinv \otimes \frac{\bar{\mathfrak{C}}: \bfC}{3} + \frac{\bfC:\bar{\mathfrak{C}} :\bfC}{9}  \bfCinv \otimes \bfCinv \right] 
+\mathfrak{C}^0=   J^{-2/3}\left[\bar{\mathfrak{C}} - \frac{\bar{\mathfrak{C}}: \bfC}{3}  \otimes \bfC^{-1} - \bfCinv \otimes \frac{\bar{\mathfrak{C}}: \bfC}{3} + \frac{\bfC:\bar{\mathfrak{C}} :\bfC}{9}  \bfCinv \otimes \bfCinv \right] 
 \end{equation}
 The push forward of the tangent to spatial configuration is
 \begin{equation}
- \mathfrak{c} = \phi_* \left[\mathfrak{C} \right] =  \mathbb{P}:\bar{\mathfrak{c}}:\mathbb{P} - \frac{1}{3} J^{-2/3} \left[{\bftau}^{iso} \otimes \bfI  +\bfI \otimes  {\bftau}^{iso} \right] + \text{tr}(\bftaubar) \mathbb{P}.
+ \mathfrak{c} = \phi_* \left[\mathfrak{C} \right] =  \mathbb{P}:\bar{\mathfrak{c}}:\mathbb{P} - \frac{2}{3} J^{-2/3} \left[{\bftau}^{iso} \otimes \bfI  +\bfI \otimes  {\bftau}^{iso} \right] + \frac{2}{3} \text{tr}(\bftaubar) \mathbb{P}.
 \end{equation}
 where 
 \begin{equation}
@@ -178,7 +178,7 @@ where
 \end{equation}
 In the above expression, $\bar{\mathfrak{C}} = 2\parder{\bfS^{iso}}{\bfCbar}$. This can be evaluated by observing that
 \begin{equation}
-	\dot{\bfS}^{iso} = \parder{\bfS^{iso}}{\bfCbar}  \dot{\bfCbar}.
+	\dot{\bfS}^{iso} = \parder{\bfS^{iso}}{\bfCbar}:  \dot{\bfCbar}.
 \end{equation}
 Since $\bfCbar \stackrel{\text{sum}}{=}\bar{\lambda}_i^2 \bfN_i \otimes \bfN_i$, $\dot{\bfCbar} = \totder{{\bar{\lambda}_i^2}}{t}  \bfN_i \otimes \bfN_i + \bar{\lambda}_i^2 \dot{\bfN_i} \otimes \bfN_i + \bar{\lambda}_i^2 \bfN_i \otimes \dot{\bfN_i} $. $\dot{\bfN_i} = \sum_{j=1}^{3} W_{ij} \bfN_j$, where $W_{ij} = -W_{ji}$ are components of a skew symmetric tensor. Hence 
 \begin{equation}
@@ -198,7 +198,7 @@ Pushing it forward gives
 + \sum_{i,j=1, i\neq j}^{3} \frac{\sigma_i \lambdabar_j^2 -\sigma_j \lambdabar_i^2}{\lambdabar_i^2 - \lambdabar_j^2}(\bfn_i \otimes \bfn_j \otimes \bfn_i \otimes \bfn_j + \bfn_i \otimes \bfn_j \otimes \bfn_j \otimes \bfn_i).
 \end{multline}
 
-For the viscous branches, instead of computing $\bar{\mathfrak{C}}_{IJKL} = \parder{\bfS_{IJ}}{\bfCbar_{KL}}$ and pushing it forward by $\bfF$ to obtain $	\bar{\mathfrak{c}}$, the following will be used. 
+For the viscous branches, instead of computing $\bar{\mathfrak{C}}_{IJKL} = 2\parder{\bfS_{IJ}}{\bfCbar_{KL}}$ and pushing it forward by $\bfF$ to obtain $	\bar{\mathfrak{c}}$, the following will be used. 
 
 In the elastic trial state, since the inelastic strain is held fixed, the viscous stresses can be taken to be a function of the elastic trail state. $\bfFbar^n =\bfF_e^{tr} \bfF_i^{n-1} \implies \bfCbar^n = (\bfF_i^{n-1})^T \bfC_e^{tr} \bfF_i^{n-1}$. Hence, the stresses can be treated as a function fo trial state. Since
 \begin{equation}
@@ -206,13 +206,13 @@ In the elastic trial state, since the inelastic strain is held fixed, the viscou
 \end{equation}
 The tangent is then computed as 
 \begin{equation}
-	\bar{\mathfrak{c}}_{ijkl} = (\det \bfF)^{-1} (\bfF_e^{tr})_{iI} (\bfF_e^{tr})_{jJ} (\bfF_e^{tr})_{kK} (\bfF_e^{tr})_{lL} \parder{(\tilde{\bfS}_{NEQ})_{IJ}}{(\bfC_e^{tr})_{KL}}.
+	\bar{\mathfrak{c}}_{ijkl} =2 (\det \bfF)^{-1} (\bfF_e^{tr})_{iI} (\bfF_e^{tr})_{jJ} (\bfF_e^{tr})_{kK} (\bfF_e^{tr})_{lL} \parder{(\tilde{\bfS}_{NEQ})_{IJ}}{(\bfC_e^{tr})_{KL}}.
 \end{equation}
 $\tilde{\bfS}_{NEQ}$, written in Eigen basis is
 \begin{equation}
 	\tilde{\bfS}_{NEQ} = \sum_{A=1}^{n} \frac{\tau_A}{(\lambda_{Ae})_{tr}^2} \tilde{\bfN}_A \otimes \tilde{\bfN}_A.
 \end{equation}
-It is to be noted that the $\tau_A$ in the above equation is a function of $\epsilon_e$ and so, the derivative is computed using chain rule. Defining $C^{alg}_{AC}$ as $\frac{\tau_A}{\epsilon_{Be}} K_{BC}^{-1}$, where $K_{BC}$ has been defined earlier during the description of Newton iterations, the final expression for the tangent can be obtained as (written in Eigen basis)
+It is to be noted that the $\tau_A$ in the above equation is a function of $\epsilon_e$ and so, the derivative is computed using chain rule. Defining $C^{alg}_{AC}$ as $\parder{\tau_A}{\epsilon_{Be}} K_{BC}^{-1}$, where $K_{BC}$ has been defined earlier during the description of Newton iterations, the final expression for the tangent can be obtained as (written in Eigen basis)
 \begin{equation}
  	\bar{\mathfrak{c}} \stackrel{\text{sum}}{=} \tilde{L}_{ABCD} (\lambda_{Ae})_{tr} (\lambda_{Be})_{tr} (\lambda_{Ce})_{tr} (\lambda_{De})_{tr} \bfn_A \otimes \bfn_B \otimes \bfn_C \otimes \bfn_D,
 \end{equation}
@@ -276,31 +276,24 @@ Jp = -\left((\bar{\tau}_{3})_{EQ}-\frac{1}{3}\Tr(\bar{\bftau}_{EQ}) \right)-\lef
 \end{equation}
 It can be seen that as a consequence of the plane stress assumption, the pressure becomes a function of the total and elastic strains through stresses. Hence, they contribute to the material tangent as well. Differentiating the first term of stress, $Jp\bfCinv$ with respect to $\bfC$,
 \begin{equation}
-	\mathfrak{C}^{vol} =2\parder{Jp\bfCinv}{\bfC} = 2Jp \parder{\bfCinv}{\bfC} + 2 \bfCinv \otimes \parder{Jp}{\bfC}
+	\mathfrak{C}^{vol} =2\parder{Jp\bfCinv}{\bfC} = 2Jp \parder{\bfCinv}{\bfC} + 2p \bfCinv \otimes \parder{J}{\bfC}
 \end{equation}
-The first derivative has been evaluated earlier as $ -\mathcal{I}$. The above expression is pushed forward as earlier to obtain the volumetric contribution to tangent $\mathfrak{c}^{vol} = \phi_* \left[\mathfrak{C}^{vol} \right]$. The push forward of $\mathcal{I}$ is the fourth order identity tensor, $\mathbb{I} = \phi_* \left[\mathcal{I} \right]$. The second term, when written in terms of Eigen basis is
+The first derivative has been evaluated earlier as $ -\mathcal{I}$. 
 \begin{equation}
-\bfCinv \otimes \parder{Jp}{\bfC} = \left( \sum_{i=1}^{3} \frac{1}{\lambda_i^2} \bfN_i \otimes \bfN_i \right) \otimes \left( \sum_{j=1}^{3} \parder{pJ}{\lambda_j^2} \bfN_j \otimes \bfN_j \right)
+\parder{J}{\bfC}  = \frac{J}{2}\bfCinv.
 \end{equation}
-A push forward of above gives
-\begin{multline}
-\phi_* \left[\bfCinv \otimes \parder{Jp}{\bfC} \right] = \left( \sum_{i=1}^{3} \frac{1}{\lambda_i^2} \bfF\bfN_i \otimes \bfF\bfN_i \right) \otimes \left( \sum_{j=1}^{3} \parder{pJ}{\lambda_j^2} \bfF\bfN_j \otimes \bfF\bfN_j \right) \\
-= \left( \sum_{i=1}^{3} \bfn_i \otimes \bfn_i \right) \otimes \left( \sum_{j=1}^{3} \lambda_j^2\parder{pJ}{\lambda_j^2} \bfn_j \otimes \bfn_j \right)
-\end{multline}
-The quantity $\lambda_j^2\parder{pJ}{\lambda_j^2}$ can be seen to be equal to $\frac{1}{2} \parder{pJ}{\log\lambda_j} = \frac{1}{2} \parder{pJ}{\epsilon_j}$. The pressure term has been evaluated in equation \ref{FV:pressureevaluation}. Pressure term is a function of the deviatoric part of Cauchy strain tensor or in terms of Hencky strain, $\bar{\epsilon}$. Hence
+Combining all the above
 \begin{equation}
-	\parder{pJ}{\epsilon_j} = \parder{pJ}{\bar{\epsilon}_m} \parder{\bar{\epsilon}_m}{\epsilon_j}=\parder{pJ}{\bar{\epsilon}_j}-\frac{1}{3}\left(\parder{pJ}{\bar{\epsilon}_1}+\parder{pJ}{\bar{\epsilon}_2}+\parder{pJ}{\bar{\epsilon}_3}\right)
+	\mathfrak{C}^{vol} = -2Jp\mathcal{I} + Jp\bfCinv  \otimes \bfCinv.
 \end{equation}
 
-The derivative w.r.t $\bar{\epsilon}$ can be seen to be 
+
+The above expression is pushed forward as earlier to obtain the volumetric contribution to tangent $\mathfrak{c}^{vol} = \phi_* \left[\mathfrak{C}^{vol} \right]$. The push forward of $\mathcal{I}$ is the fourth order identity tensor, $\mathbb{I} = \phi_* \left[\mathcal{I} \right]$. Push forward of $\bfCinv \otimes \bfCinv$ is $\bfI \otimes \bfI$. Hence
+
 \begin{equation}
-	 \parder{pJ}{\bar{\epsilon}_j} = -\left[ \parder{\bar{\tau}_{3}}{\bar{\epsilon}_j}  -\frac{1}{3}\left( \parder{\bar{\tau}_{1}}{\bar{\epsilon}_j} +\parder{\bar{\tau}_{2}}{\bar{\epsilon}_j}+\parder{\bar{\tau}_{3}}{\bar{\epsilon}_j} \right)  \right] = -\left( C^{alg}_{3j} - \frac{1}{3} (C^{alg}_{1j} + C^{alg}_{2j} + C^{alg}_{3j})  \right)
+	\mathfrak{c}^{vol} = -2Jp\mathbb{I} + Jp\bfI \otimes \bfI.
 \end{equation}
-Combining all the above gives
-\begin{equation}
-	\mathfrak{c}^{vol}_{ijkl} \stackrel{(\bfn_1,\bfn_2,\bfn_3) }{=} -2Jp \mathbb{I}_{ijkl}+  \delta_{ij} \parder{pJ}{\epsilon_k}\delta_{kl} (\text{no sum})
-\end{equation}
-It shall be observed that the viscous contribution to the pressure can differentiated the same way as earlier. Instead of differentiating with $\bfC$ and pushing it forward with $\bfF$, it is differentiated with respect to $\bfC_e^{tr}$ and pushed forward with $\bfF_e^{tr}$. The results still remain the same.
+
 
 \subsection{Quadratic Hencky strain energy density}
 If the strain energy density of the viscous branches are represented by a quadratic energy density based on Hencky strains, that is
@@ -316,6 +309,66 @@ which form an algebraic system of equations that can be solved without the Newto
 %\begin{equation}
 %\mathfrak{C}= \sum_{\alpha,\beta =1}^{3} \frac{1}{J}\parder{\tau_i}{\log \lambda_j} \boldsymbol{\eta}_{\alpha\alpha\beta\beta} - \sum_{\alpha=1}^{3} 2 \sigma_{\alpha\alpha}\boldsymbol{\eta}_{\alpha\alpha\alpha\alpha} + \sum_{\alpha,\beta =1, \alpha\neq\beta}^{3} \frac{\sigma_{\alpha\alpha} \lambda_\beta^2-\sigma_{\beta\beta} \lambda_\alpha^2}{\lambda_\alpha^2- \lambda_\beta^2} \left( \boldsymbol{\eta}_{\alpha\beta\alpha\beta} + \boldsymbol{\eta}_{\alpha\beta\beta\alpha} \right)
 %\end{equation}
+
+\subsection{Alternate Plane stress formulation}
+\subsubsection*{Elastic branch}
+
+Since the material is incompressible and plane stress conditions are assumed to prevail, the out of plane component of $\bfC$ can be expressed in terms of the in-plane components as 
+\begin{equation}
+	C_{33} = 1/\det(\bfCtilde)
+\end{equation}
+Hence, for Neo-Hookean material,
+\begin{equation}
+	\psi = \mu (I_1(\bfCbar)-3) = \mu (I_1(\bfCtilde)+1/\det(\bfCtilde)-3).
+\end{equation}
+Hence
+\begin{equation}
+	\bfStilde = 2\parder{\psi}{\bfCtilde} = 2\mu \left(\bfItilde -\frac{1}{\det(\bfCtilde)} \bfCtilde^{-1} \right)
+\end{equation}
+and 
+\begin{equation}
+\bfsigmatilde = 2\mu \left(\bfbtilde -\frac{1}{\det(\bfbtilde)} \bfItilde \right).
+\end{equation}
+The 2D tangent can be evaluated as
+\begin{equation}
+	\tilde{\mathfrak{C}} = 2\parder{\bfStilde}{\bfCtilde} = \frac{4\mu}{\det(\bfCtilde)} \left( \bfCtilde^{-1} \otimes \bfCtilde^{-1} + \tilde{\mathcal{I}} \right)
+\end{equation}
+Pushing it forward
+\begin{equation}
+	\tilde{\mathfrak{c}} = \frac{4\mu}{\det(\bfbtilde)} \left( \bfItilde \otimes \bfItilde + \tilde{\mathbb{I}} \right).
+\end{equation}
+
+\subsubsection*{Viscous branches}
+The dissipation inequality \ref{fv:dissipationineq} remains the same even in the 2D case. The evolution equation satisfying this inequality becomes
+\begin{equation}
+	-\frac{1}{2} \mathcal{L}_v\bfb_e. \bfb_e^{-1}  = \frac{1}{\eta_D} \boldsymbol{\tau}_{NEQ}.
+\end{equation}
+The expression for dissipation then becomes 
+\begin{equation}
+	\mathcal{D} = \frac{1}{\eta_D} \boldsymbol{\tau}_{NEQ}:\boldsymbol{\tau}_{NEQ},
+\end{equation}
+which can be seen to be positive since $\eta_D>0$. The residual can be seen to be
+\begin{equation}
+r_A	 = \epsilon_{Ae} + \frac{\Delta t }{2 \eta_D} \tau_A - 	(\epsilon_{Ae})_{tr} = 0,
+\label{fv:residualnewtoniter2d}
+\end{equation}
+The tangent remains similar to the 3D case, except that the strain energy is to be treated as a function of $I_1(\bfCtilde)$ and $I_3(\bfCtilde)$ as earlier. The derivative $\parder{\epsilon_{Ae}}{(\epsilon_{Be})_{tr}}$ that raises when evaluating tangent uses $	K_{AB}$ that is computed during the newton iterations during the internal variable update.
+\begin{equation}
+	K_{AB} = \parder{r_A}{\epsilon_{Be}} = \delta_{AB} + \frac{\Delta t}{2 \eta_D} \parder{\tau_A}{\epsilon_{Be}}.
+\end{equation}
+The derivative
+\begin{equation}
+	\parder{\tau_A}{\epsilon_{Ae}} = 2 \lambda_{Ae}^2 \parder{\tau_A}{\lambda_{Ae}^2}.
+\end{equation}
+Since $\tau_A = 2 \lambda_{Ae}^2 \parder{\psi}{\lambda_{Ae}^2 }$ and for a Neo-Hookean material, $\psi = \mu \left(\lambda_{Ae}^2 + \lambda_{Be}^2 + \frac{1}{\lambda_{Ae}^2 \lambda_{Be}^2 }\right)$, $\tau_A = 2\mu \left(\lambda_{Ae}^2  - \frac{1}{\lambda_{Ae}^2 \lambda_{Be}^2 }\right)$.
+Then 
+\begin{equation}
+	\parder{\tau_A}{\epsilon_{Ae}} =  4\mu \left(\lambda_{Ae}^2  + \frac{1}{\lambda_{Ae}^2 \lambda_{Be}^2 }\right)
+\end{equation}
+and 
+\begin{equation}
+\parder{\tau_A}{\epsilon_{Be}} = 2 \lambda_{Be}^2 \parder{\tau_A}{\lambda_{Be}^2} =  \frac{4\mu}{\lambda_{Ae}^2 \lambda_{Be}^2 } .
+\end{equation}
 
 \bibliography{/home/vasudevan/PhD/summary/PhD_summary/PhD}
 
