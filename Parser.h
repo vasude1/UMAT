@@ -1,14 +1,14 @@
 
 void parse_deformation_variables(double* DFGRD0,double* DFGRD1,MatrixXd& F,MatrixXd& F_old){
-  F_old(0,0) = *DFGRD0;
-  F_old(1,0) = *(DFGRD0+1);
-  F_old(2,0) = *(DFGRD0+2);
-  F_old(0,1) = *(DFGRD0+3);
-  F_old(1,1) = *(DFGRD0+4);
-  F_old(2,1) = *(DFGRD0+5);
-  F_old(0,2) = *(DFGRD0+6);
-  F_old(1,2) = *(DFGRD0+7);
-  F_old(2,2) = 1.0/(F_old(0,0)*F_old(1,1) - F_old(0,1)*F_old(1,0));
+  // F_old(0,0) = *DFGRD0;
+  // F_old(1,0) = *(DFGRD0+1);
+  // F_old(2,0) = *(DFGRD0+2);
+  // F_old(0,1) = *(DFGRD0+3);
+  // F_old(1,1) = *(DFGRD0+4);
+  // F_old(2,1) = *(DFGRD0+5);
+  // F_old(0,2) = *(DFGRD0+6);
+  // F_old(1,2) = *(DFGRD0+7);
+  // F_old(2,2) = *(DFGRD0+8);
 
   // F_old(2,2) = 1.0/(F_old(0,0)*F_old(1,1) - F_old(0,1)*F_old(1,0));
 
@@ -21,7 +21,7 @@ void parse_deformation_variables(double* DFGRD0,double* DFGRD1,MatrixXd& F,Matri
   F(2,1) = *(DFGRD1+5);
   F(0,2) = *(DFGRD1+6);
   F(1,2) = *(DFGRD1+7);
-  F(2,2) = 1.0/(F(0,0)*F(1,1) - F(0,1)*F(1,0));
+  F(2,2) = *(DFGRD1+8);
 };
 
 void parse_material_properties(double* props, double* stiff_ratio, double* relax, int number_branches){
@@ -46,30 +46,20 @@ void deviatoric_projector(Matrix3d* tau){
 };
 
 
-void deviatoric_projector_tangent(double p,Matrix3d tau,Matrix6d* tangent){
-  MatrixXd tangent_temp = *tangent;
-  (*tangent).col(0).array() -= (tangent_temp.col(0).array() + tangent_temp.col(1).array() + tangent_temp.col(2).array())/3.0;
-  (*tangent).col(2).array() -= (tangent_temp.col(0).array() + tangent_temp.col(1).array() + tangent_temp.col(2).array())/3.0;
-  (*tangent).col(3).array() -= (tangent_temp.col(0).array() + tangent_temp.col(1).array() + tangent_temp.col(2).array())/3.0;
+void deviatoric_projector_tangent(double p,Matrix3d tau,Matrix6d* tangent, double detc2d){
 
-  (*tangent).row(0).array() -= (tangent_temp.row(0).array() + tangent_temp.row(1).array() + tangent_temp.row(2).array())/3.0;
-  (*tangent).row(2).array() -= (tangent_temp.row(0).array() + tangent_temp.row(1).array() + tangent_temp.row(2).array())/3.0;
-  (*tangent).row(3).array() -= (tangent_temp.row(0).array() + tangent_temp.row(1).array() + tangent_temp.row(2).array())/3.0;
+  MatrixXd four_id = MatrixXd::Identity(6,6);
+  MatrixXd projector = MatrixXd::Zero(6,6);
 
-  (*tangent)(seq(0,2),seq(0,2)).array() += tangent_temp(seq(0,2),seq(0,2)).sum()/9.0;
-
-  VectorXd tau_iso(6);
-  double tr_tau = tau(0,0)+tau(1,1)+tau(2,2);
-//
-  tau_iso(0) = tau(0,0)-tr_tau/3.0;
-  tau_iso(1) = tau(1,1)-tr_tau/3.0;
-  tau_iso(2) = tau(2,2)-tr_tau/3.0;
-  tau_iso(3) = tau(0,1);
-  tau_iso(4) = tau(1,2);
-  tau_iso(5) = tau(0,2);
-
-  // cout<<tau_iso<<endl;
-
+  projector(seq(0,2),seq(0,2)).array() += -1.0/3.0;
+  projector += four_id;
+  *tangent = projector *(*tangent*projector);
+  // cout << (*tangent) << endl;
+  //
+  Vector6d tau_iso;
+  tau_iso <<tau(0,0),tau(1,1),tau(2,2),tau(0,1),tau(1,2),tau(2,0);
+  tau_iso = projector*tau_iso;
+  // //
   (*tangent)(seq(0,5),0) -= 2.0/3.0*tau_iso;
   (*tangent)(seq(0,5),1) -= 2.0/3.0*tau_iso;
   (*tangent)(seq(0,5),2) -= 2.0/3.0*tau_iso;
@@ -78,50 +68,37 @@ void deviatoric_projector_tangent(double p,Matrix3d tau,Matrix6d* tangent){
   (*tangent)(1,seq(0,5)) -= 2.0/3.0*tau_iso;
   (*tangent)(2,seq(0,5)) -= 2.0/3.0*tau_iso;
   //
+  // cout << (*tangent) << endl;
 
+  double tr_tau = tau(0,0)+tau(1,1)+tau(2,2);
   tr_tau *= 2.0/3.0;
   //
-  (*tangent)(0,0) += 2.0/3.0*tr_tau;
-  (*tangent)(0,1) += -1.0/3.0*tr_tau;
-  (*tangent)(0,2) += -1.0/3.0*tr_tau;
+  (*tangent)(seq(0,2),seq(0,2)).array() += -1.0/3.0*tr_tau;
+  (*tangent) += 0.5*tr_tau*four_id;
+  (*tangent)(seq(0,2),seq(0,2)) += 0.5*tr_tau*MatrixXd::Identity(3,3);
 
-  (*tangent)(1,0) += -1.0/3.0*tr_tau;
-  (*tangent)(1,1) += 2.0/3.0*tr_tau;
-  (*tangent)(1,2) += -1.0/3.0*tr_tau;
+  // cout << (*tangent) << endl;
 
-  (*tangent)(2,0) += -1.0/3.0*tr_tau;
-  (*tangent)(2,1) += -1.0/3.0*tr_tau;
-  (*tangent)(2,2) += 2.0/3.0*tr_tau;
+  (*tangent) += -p*four_id;
+  (*tangent)(seq(0,2),seq(0,2)) += -p*MatrixXd::Identity(3,3);
 
-  (*tangent)(3,3) += 0.5*tr_tau;
-  (*tangent)(4,4) += 0.5*tr_tau;
-  (*tangent)(5,5) += 0.5*tr_tau;
+  // cout << (*tangent) << endl;
+
+  // (*tangent)(seq(0,2),seq(0,2)).array() += 4E6/detc2d;
+  // (*tangent) += 2E6/detc2d*0.5*MatrixXd::Identity(6,6);
+  // (*tangent)(seq(0,2),seq(0,2)) += 2E6/detc2d*0.5*MatrixXd::Identity(3,3);
 
 
   //
-  for(int i =0; i<3;++i){
-      (*tangent)(i,i) += -2.0*p;
-  }
+  // (*tangent)(seq(0,2),seq(0,2)).array() += p;
 
-  (*tangent)(3,3) += -p;
-  (*tangent)(4,4) += -p;
-  (*tangent)(5,5) += -p;
-
-  (*tangent)(seq(0,2),seq(0,2)).array() += p;
   // //
   VectorXd tau_row(6);
-  // tau_row = tau_iso;
-  // double p_temp = -tau_iso(2);
-  // tau_row(seq(0,2)).array() += p_temp;
-  tau_row(0) = tau(0,0);
-  tau_row(1) = tau(1,1);
-  tau_row(2) = tau(2,2);
-  tau_row(3) = tau(0,1);
-  tau_row(4) = tau(1,2);
-  tau_row(5) = tau(0,2);
+  tau_row = tau_iso;
+  tau_row(seq(0,2)).array() += p;
+  //
+  // tau_row<<tau(0,0),tau(1,1),tau(2,2),tau(0,1),tau(1,2),tau(2,0);
   // //
-
-
   (*tangent)(0,0) += 2*tau_row(0);
   (*tangent)(1,1) += 2*tau_row(1);
   (*tangent)(2,2) += 2*tau_row(2);
@@ -148,7 +125,7 @@ void deviatoric_projector_tangent(double p,Matrix3d tau,Matrix6d* tangent){
   (*tangent)(3,4) += 0.5*tau_row(5);
   (*tangent)(3,5) += 0.5*tau_row(4);
   (*tangent)(4,5) += 0.5*tau_row(3);
-  // cout << tangent <<endl;
+  // // cout << tangent <<endl;
 //
 };
 
@@ -168,6 +145,16 @@ void return_tangent(double* DDSDDE, MatrixXd tangent){
   *(DDSDDE+6) = tangent(0,3);
   *(DDSDDE+7) = tangent(1,3);
   *(DDSDDE+8) = tangent(3,3);
+  // int k=0;
+  // for(int i=0;i<6;++i)
+  // {
+  //   for(int j=0;j<6;++j)
+  //   {
+  //     *(DDSDDE+k) = tangent(j,i);
+  //     cout << k <<endl;
+  //     ++k;
+  //   }
+  // }
 };
 
 void return_internalvar(double* STATEV,Matrix3d* ivar, int number_branches){

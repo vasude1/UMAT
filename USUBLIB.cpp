@@ -13,6 +13,8 @@ using namespace std;
 using namespace std::chrono;
 
 typedef Matrix<double, 6, 6> Matrix6d;
+typedef Vector<double, 6> Vector6d;
+
 
 #include "Parser.h"
 #include "/home/vasudevan/PhD/Code/UMAT/perfect_incomp/Material.h"
@@ -40,6 +42,7 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
   MatrixXd C_inv = C.inverse();
   // MatrixXd C_old = F_old.transpose()*F_old;
 
+
   double stiff_ratio[number_branches];
   double relaxation_time[number_branches];
   parse_material_properties(PROPS,stiff_ratio,relaxation_time,number_branches);
@@ -62,9 +65,9 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
   // auto start = high_resolution_clock::now();
 
   //
-  // #pragma omp parallel num_threads(number_branches+1)
-  // {
-  // #pragma omp for
+  #pragma omp parallel num_threads(number_branches+1)
+  {
+  #pragma omp for
   for(int i=left;i<number_branches+1;++i)
   {
       if(i==number_branches)
@@ -86,8 +89,7 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
         (branch+i)->Material::set_material(stiff_ratio[i],relaxation_time[i]);
         (branch+i)->set_inelastic_strain(*(ivar+i));
         (branch+i)->compute_be_tr(F);
-        // *(ivar+i)=(branch+i)->update_intervar_newton_principal_hencky(F);
-        (branch+i)->update_intervar_newton_principal(F);
+        *(ivar+i)=(branch+i)->update_intervar_newton_principal_hencky(F);
         *(tau+i) = (branch+i)->compute_stress_tau();
         *(tangent+i) = (branch+i)->rotate_mat_tan(0);
         *(tangent_volu+i) = (branch+i)->mat_tan_volu();
@@ -95,19 +97,21 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
         *(STATEV+10*i+9) = *(_SCD+i) = (branch+i)->compute_dissipation();
       }
   }
-  // }
+  }
   // auto stop = high_resolution_clock::now();
   // auto duration = duration_cast<microseconds>(stop - start);
   // cout << "duration = " << duration.count() << endl;
 
   add_all(&tau_final,&tangent_final,&tangent_volu_final,SSE,SCD,tau,tangent,tangent_volu,_SSE,_SCD,number_branches+1,left);
-
   MatrixXd tau_temp = tau_final;
   deviatoric_projector(&tau_final);
   double p = -1.0*tau_final(2,2);
   tau_final += p*MatrixXd::Identity(3,3);
-  deviatoric_projector_tangent(p,tau_temp,&tangent_final);
+  // std::cout << tau_final << '\n';
+  deviatoric_projector_tangent(p,tau_temp,&tangent_final,1.0/b(2,2));
   tangent_final = tangent_final + tangent_volu_final;
+  // std::cout << tangent_final << '\n';
+  // throw;
   return_stress(STRESS,tau_final);
   return_tangent(DDSDDE,tangent_final);
   return_internalvar(STATEV,ivar,number_branches);
