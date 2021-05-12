@@ -25,9 +25,9 @@ class viscous_branch: public Material
 
   Matrix2d tau;
   Vector2d tau_principal,epsilon, epsilon_tr;
-  MatrixXd mat_tan = MatrixXd::Zero(3,3);
-  MatrixXd mat_tan_vol = MatrixXd::Zero(3,3);
-  MatrixXd Rotation_mat = MatrixXd::Zero(3,3);
+  Matrix3d mat_tan;
+  Matrix3d mat_tan_vol;
+  Matrix3d Rotation_mat;
   Matrix3d Rotation_mat_transp;
 
   double lambda_A,lambda_B,lambda_C,eta;
@@ -38,7 +38,7 @@ class viscous_branch: public Material
   double I1, I2, dW_dI1, dW_dI2, d2W_dI1I1, d2W_dI1I2, d2W_dI2I2;
   double delta_t;
 
-
+  viscous_branch();
   void set_inelastic_strain(MatrixXd);
   void compute_be_tr(MatrixXd);
   void compute_invar(MatrixXd, bool);
