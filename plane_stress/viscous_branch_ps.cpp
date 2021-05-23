@@ -21,7 +21,7 @@ Rotation_mat = MatrixXd::Zero(3,3);
 
 void viscous_branch::set_inelastic_strain(MatrixXd _C_i){
   C_i = _C_i;
-  eta = relaxation_time*c[0];
+  eta = relaxation_time*(c[0]);
 };
 
 void viscous_branch::compute_be_tr(MatrixXd F){
@@ -58,12 +58,12 @@ void viscous_branch::compute_invar(MatrixXd C, bool a){
   if(a){
     double c33 = 1.0/C.determinant();
     invar[0] = C(0,0) + C(1,1) + c33;
-    invar[1] = -0.5*(C(0,0)*C(0,0)+C(1,1)*C(1,1)+c33*c33+2.0*C(1,0)*C(1,0) - invar[0]*invar[0]);
+    invar[1] = 3.0;
   }
   if(!a){
     double c33 = 1.0/C(0)/C(1);
     invar[0] = C(0)+ C(1) + c33;
-    invar[1] = C(0)*C(1) + C(1)*c33 + C(0)*c33;
+    invar[1] = 3.0;
   }
 
 };
@@ -94,8 +94,8 @@ void viscous_branch::compute_stress_tau_principal(){
   dW_dI1 = derivative[0];
   dW_dI2 = derivative[1];
 
-  tau_principal(0) = (dW_dI1*(1.0-1.0/lambda_A/lambda_A/lambda_B))*lambda_A;
-  tau_principal(1) = (dW_dI1*(1.0-1.0/lambda_A/lambda_B/lambda_B))*lambda_B;
+  tau_principal(0) = (dW_dI1*(1.0-1.0/sq(lambda_A)/lambda_B))*lambda_A;
+  tau_principal(1) = (dW_dI1*(1.0-1.0/lambda_A/sq(lambda_B)))*lambda_B;
 
   tau_principal = 2*tau_principal;
 };
@@ -119,7 +119,10 @@ double viscous_branch::compute_strain_energy(MatrixXd _be){
   double psi = 0.0;
   compute_invar(_be,1);
   I1 = invar[0];
-  psi += c[0]*(I1-3);
+  I2 = invar[1];
+  psi += c[0]*(I1-3)+c[1]*(I2-3)+c[2]*sq(I1-3)+c[3]*(I1-3)*(I2-3);
+  psi += c[4]*sq(I2-3)+c[5]*cu(I1-3)+c[6]*sq(I1-3)*(I2-3);
+  psi += c[7]*(I1-3)*sq(I2-3)+c[8]*cu(I2-3);
   return psi;
 };
 
@@ -132,7 +135,7 @@ double viscous_branch::compute_strain_energy_hencky(MatrixXd _be){
 double viscous_branch::compute_dissipation(){
   double psi = 0.0;
   psi += tau_principal.transpose()*tau_principal;
-  psi /= eta;
+  psi /= 2.0*eta;
   return psi;
 };
 
@@ -234,7 +237,7 @@ MatrixXd viscous_branch::update_intervar_newton_principal(MatrixXd F){
       epsilon += depsilon;
       eigs = exp(2.0*epsilon.array());
     }
-    while (depsilon.norm() > 1E-13);
+    while (depsilon.norm() > std::numeric_limits<double>::epsilon());
   compute_residual_principal();
   compute_tangent_principal();
   compute_tangent_nr_principal();

@@ -65,4 +65,15 @@ class viscous_branch: public Material
   friend void convert_matrix_to_vector(MatrixXd&, MatrixXd&);
   friend void convert_vector_to_matrix(MatrixXd&, MatrixXd&);
 };
+
+template <typename number>
+number sq( number n ) {
+  return (n*n);
+ }
+
+template <typename number>
+number cu( number n ) {
+  return (n*n*n);
+ }
+ 
 #endif
