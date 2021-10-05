@@ -1,0 +1,14 @@
+# YAML 1.2
+---
+abstract: Abstract
+authors: 
+  -
+    family-names: Kamasamudram
+    given-names: Vasudevan
+    orcid: "https://orcid.org/0000-0001-6967-5987 "
+cff-version: "1.1.0"
+keywords: 
+  - "Finite viscoelastic model"
+message: "If you use this software, please cite it using these metadata."
+title: "UMAT for a Finite Viscoelastic model"
+...
