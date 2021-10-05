@@ -9,6 +9,6 @@ authors:
 cff-version: "1.1.0"
 keywords: 
   - "Finite viscoelastic model"
-message: "If you use this software, please cite it using these metadata."
+repository-code: "https://github.com/vasude1/UMAT"
 title: "UMAT for a Finite Viscoelastic model"
 ...
