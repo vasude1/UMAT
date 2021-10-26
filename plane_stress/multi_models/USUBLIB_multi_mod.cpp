@@ -13,8 +13,11 @@ using namespace std;
 using namespace std::chrono;
 
 #include "Parser_ps.h"
-#include "/home/vasudevan/PhD/Code/UMAT/plane_stress_multi_models/Polynomial.h"
 #include "/home/vasudevan/PhD/Code/UMAT/plane_stress_multi_models/viscous_branch.h"
+#include "/home/vasudevan/PhD/Code/UMAT/plane_stress_multi_models/viscous_branch.t.hpp"
+
+#include "/home/vasudevan/PhD/Code/UMAT/plane_stress_multi_models/Polynomial.h"
+#include "/home/vasudevan/PhD/Code/UMAT/plane_stress_multi_models/Hencky.h"
 
 template <class model>
 struct branch{viscous_branch dash_pot; model spring;};
@@ -49,7 +52,7 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
   parse_internal_variables(STATEV,ivar,number_branches);
 
   branch<Polynomial> hyper;
-  branch<Polynomial> viscous[number_branches];
+  branch<Hencky> viscous[number_branches];
 
   Matrix2d tau[number_branches+1];
   Matrix3d tangent[number_branches+1];
@@ -67,7 +70,7 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
       if(i==number_branches)
       {
         (hyper.spring).set_material(1.0,1E16);
-        (hyper.dash_pot).set_delta_t(*DTIME,&(hyper.spring));
+        (hyper.dash_pot).set_viscous_para(*DTIME,&(hyper.spring));
         (hyper.dash_pot).set_inelastic_strain(MatrixXd::Identity(2,2));
         (hyper.dash_pot).compute_be_tr(F);
         (hyper.dash_pot).update_intervar_newton_principal(F,&(hyper.spring));
@@ -80,13 +83,13 @@ double* DFGRD0,double* DFGRD1,int& NOEL,int& NPT,int& LAYER,int& KSPT,int& JSTEP
       else
       {
         ((viscous+i)->spring).set_material(stiff_ratio[i],relaxation_time[i]);
-        ((viscous+i)->dash_pot).set_delta_t(*DTIME,&((viscous+i)->spring));
+        ((viscous+i)->dash_pot).set_viscous_para(*DTIME,&((viscous+i)->spring));
         ((viscous+i)->dash_pot).set_inelastic_strain(*(ivar+i));
         ((viscous+i)->dash_pot).compute_be_tr(F);
         *(ivar+i)=((viscous+i)->dash_pot).update_intervar_newton_principal(F,&((viscous+i)->spring));
         *(tau+i) = ((viscous+i)->dash_pot).compute_stress_tau();
         *(tangent+i) = ((viscous+i)->dash_pot).rotate_mat_tan();
-        *(STATEV+5*i+4) = *(_SSE+i) = ((viscous+i)->spring).compute_strain_energy(branch[i].be);
+        *(STATEV+5*i+4) = *(_SSE+i) = ((viscous+i)->spring).compute_strain_energy();
         *(_SCD+i) = ((viscous+i)->dash_pot).compute_dissipation();
       }
   }
