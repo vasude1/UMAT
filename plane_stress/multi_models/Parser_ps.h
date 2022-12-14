@@ -1,5 +1,5 @@
 
-void parse_deformation_variables(double* DFGRD0,double* DFGRD1,MatrixXd& F,MatrixXd& F_old){
+void parse_deformation_variables(double* DFGRD0,double* DFGRD1,Matrix2d& F,Matrix2d& F_old){
 
   F(0,0) = *DFGRD1;
   F(1,0) = *(DFGRD1+1);
@@ -76,27 +76,28 @@ void return_internalvar(double* STATEV,Matrix2d* ivar, int number_branches){
   for(int i=0;i<number_branches;++i){
     total_SE += *(STATEV+5*i+4);
   }
- 
+
  total_SE += *(STATEV+5*number_branches);
  *(STATEV+5*number_branches+1) = total_SE/(*(STATEV+5*number_branches));
 
    for(int i=0;i<number_branches;++i){
     *(STATEV+5*i+4) /= *(STATEV+5*number_branches) ;
   }
-	
+
 };
 
 
-void add_all(Matrix2d* tau_final,Matrix3d* tangent_final,double* SSE,double* SCD,Matrix2d* tau,
+
+void add_all(Matrix2d* tau_final,Matrix3d* tangent_final,double* SSE,double* SCD_rate,Matrix2d* tau,
           Matrix3d* tangent,double* _SSE,double* _SCD ,int branches,int left){
   *SSE = 0.0;
-  *SCD = 0.0;
+  *SCD_rate = 0.0;
 
   for(int i=left;i< branches; ++i)
   {
     *tau_final = *tau_final + *(tau+i);
     *tangent_final = *tangent_final + *(tangent+i);
     *SSE += *(_SSE+i);
-    *SCD += *(_SCD+i);
+    *SCD_rate += *(_SCD+i);
   }
 };
