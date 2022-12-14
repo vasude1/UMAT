@@ -13,13 +13,13 @@ using namespace std;
 using namespace std::chrono;
 
 #include "Parser_ps.h"
-#include "/home/vasudevan/PhD/Code/UMAT/plane_stress_multi_models/elastic_branch.h"
-#include "/home/vasudevan/PhD/Code/UMAT/plane_stress_multi_models/elastic_branch.t.hpp"
-#include "/home/vasudevan/PhD/Code/UMAT/plane_stress_multi_models/viscous_branch.h"
-#include "/home/vasudevan/PhD/Code/UMAT/plane_stress_multi_models/viscous_branch.t.hpp"
+#include "elastic_branch.h"
+#include "elastic_branch.t.hpp"
+#include "viscous_branch.h"
+#include "viscous_branch.t.hpp"
 
-#include "/home/vasudevan/PhD/Code/UMAT/plane_stress_multi_models/Polynomial.h"
-#include "/home/vasudevan/PhD/Code/UMAT/plane_stress_multi_models/Hencky.h"
+#include "Polynomial.h"
+#include "Hencky.h"
 
 template <class model>
 struct branch{viscous_branch dash_pot; model spring;};
